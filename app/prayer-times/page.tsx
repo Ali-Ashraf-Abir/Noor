@@ -13,6 +13,23 @@ import LocationButton from "@/components/LocationButton";
 import ErrorBanner from "@/components/ErrorBanner";
 import CountdownTimer from "@/components/CountDownTimer";
 
+// ── Persistence keys ───────────────────────────────────────────────────────────
+const LS_COORDS  = "prayer-coords";
+const LS_METHOD  = "prayer-method";
+const LS_SCHOOL  = "prayer-school";
+
+function loadStored<T>(key: string, fallback: T): T {
+  try {
+    const v = localStorage.getItem(key);
+    return v !== null ? (JSON.parse(v) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function save(key: string, value: unknown) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+}
 
 // ── SVG icon set ──────────────────────────────────────────────────────────────
 const Icons = {
@@ -74,6 +91,17 @@ const Icons = {
       <path strokeLinecap="round" d="M5.636 5.636 18.364 18.364" />
     </svg>
   ),
+  Pin: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+    </svg>
+  ),
+  Refresh: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+    </svg>
+  ),
 };
 
 const PRAYER_COLORS: Record<string, string> = {
@@ -85,83 +113,113 @@ const PRAYER_COLORS: Record<string, string> = {
   Isha:    "text-blue-400",
 };
 
-function getNextPrayer(times: Record<string, string>): {
-  name: string;
-  time: string;
-  secondsLeft: number;
-} {
+function getNextPrayer(times: Record<string, string>) {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
   for (const name of PRAYER_ORDER) {
     const prayerMinutes = timeStrToMinutes(times[name]);
     if (prayerMinutes > currentMinutes) {
-      return {
-        name,
-        time: times[name],
-        secondsLeft: (prayerMinutes - currentMinutes) * 60 - now.getSeconds(),
-      };
+      return { name, time: times[name], secondsLeft: (prayerMinutes - currentMinutes) * 60 - now.getSeconds() };
     }
   }
   const fajrMinutes = timeStrToMinutes(times["Fajr"]);
   const minutesLeftToday = 24 * 60 - currentMinutes;
-  return {
-    name: "Fajr",
-    time: times["Fajr"],
-    secondsLeft: (minutesLeftToday + fajrMinutes) * 60 - now.getSeconds(),
-  };
+  return { name: "Fajr", time: times["Fajr"], secondsLeft: (minutesLeftToday + fajrMinutes) * 60 - now.getSeconds() };
 }
 
+// ── Component ──────────────────────────────────────────────────────────────────
 export default function PrayerTimesPage() {
-  const [data, setData] = useState<PrayerTimesData | null>(null);
+  const [data, setData]       = useState<PrayerTimesData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [coords, setCoords] = useState<Coords | null>(null);
-  const [method, setMethod] = useState(3);
-  const [school, setSchool] = useState(1);
-  const [now, setNow] = useState(new Date());
+  const [error, setError]     = useState<string | null>(null);
+  const [coords, setCoords]   = useState<Coords | null>(null);
+  const [method, setMethod]   = useState(3);
+  const [school, setSchool]   = useState(1);
+  const [now, setNow]         = useState(new Date());
+  // has the component mounted and read localStorage yet?
+  const [hydrated, setHydrated] = useState(false);
 
+  // Live clock
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const load = useCallback(
-    async (c: Coords) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetchPrayerTimes(c, method, school);
-        if (res.code === 200 && res.data) setData(res.data);
-        else setError(res.message ?? "Failed to fetch prayer times.");
-      } catch (e) {
-        setError((e as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [method, school]
-  );
+  // ── On mount: restore saved prefs and auto-load if coords exist ──────────────
+  useEffect(() => {
+    const savedCoords  = loadStored<Coords | null>(LS_COORDS, null);
+    const savedMethod  = loadStored<number>(LS_METHOD, 3);
+    const savedSchool  = loadStored<number>(LS_SCHOOL, 1);
 
+    setMethod(savedMethod);
+    setSchool(savedSchool);
+
+    if (savedCoords) {
+      setCoords(savedCoords);
+      // Auto-fetch with saved prefs
+      fetchPrayerTimes(savedCoords, savedMethod, savedSchool)
+        .then(res => {
+          if (res.code === 200 && res.data) setData(res.data);
+          else setError(res.message ?? "Failed to fetch prayer times.");
+        })
+        .catch(e => setError((e as Error).message))
+        .finally(() => setHydrated(true));
+    } else {
+      setHydrated(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Fetch helper (used on filter changes + manual locate) ────────────────────
+  const load = useCallback(async (c: Coords, m: number, s: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetchPrayerTimes(c, m, s);
+      if (res.code === 200 && res.data) setData(res.data);
+      else setError(res.message ?? "Failed to fetch prayer times.");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ── Re-fetch when method/school changes (only if coords already known) ───────
+  useEffect(() => {
+    if (!hydrated || !coords) return;
+    save(LS_METHOD, method);
+    save(LS_SCHOOL, school);
+    load(coords, method, school);
+  }, [method, school]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Manual location button ───────────────────────────────────────────────────
   const handleLocate = async () => {
     setLoading(true);
     setError(null);
     try {
       const c = await getUserLocation();
       setCoords(c);
-      await load(c);
+      save(LS_COORDS, c);
+      save(LS_METHOD, method);
+      save(LS_SCHOOL, school);
+      await load(c, method, school);
     } catch (e) {
       setError((e as Error).message);
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (coords) load(coords);
-  }, [method, school]); // eslint-disable-line react-hooks/exhaustive-deps
+  // ── Clear saved location ─────────────────────────────────────────────────────
+  const handleClearLocation = () => {
+    try { localStorage.removeItem(LS_COORDS); } catch {}
+    setCoords(null);
+    setData(null);
+    setError(null);
+  };
 
-  const nextPrayer = data ? getNextPrayer(data.times) : null;
+  const nextPrayer    = data ? getNextPrayer(data.times) : null;
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const hasSavedLocation = !!coords;
 
   return (
     <div className="min-h-screen pt-24 pb-20 px-4">
@@ -206,12 +264,38 @@ export default function PrayerTimesPage() {
               </select>
             </div>
             <div className="flex items-end">
-              <LocationButton loading={loading} hasLocation={!!coords} onClick={handleLocate} />
+              <LocationButton loading={loading} hasLocation={hasSavedLocation} onClick={handleLocate} />
             </div>
           </div>
-          {!data && !loading && (
+
+          {/* Saved location indicator */}
+          {hasSavedLocation && data && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--border)]">
+              <div className="flex items-center gap-2 text-[var(--text-muted)] text-xs">
+                <span className="text-[var(--gold)]">{Icons.Pin}</span>
+                <span>Location saved · auto-loads on each visit</span>
+              </div>
+              <button
+                onClick={handleClearLocation}
+                className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-red-400 transition-colors"
+              >
+                {Icons.Refresh}
+                Reset location
+              </button>
+            </div>
+          )}
+
+          {/* First visit prompt */}
+          {!hasSavedLocation && !loading && (
             <p className="text-[var(--text-muted)] text-sm text-center mt-4">
-              Click "Use My Location" to fetch today's prayer times.
+              Click "Use My Location" to fetch today's prayer times. Your location will be saved for future visits.
+            </p>
+          )}
+
+          {/* Auto-loading indicator on hydration */}
+          {hasSavedLocation && loading && (
+            <p className="text-[var(--text-muted)] text-sm text-center mt-4">
+              Loading your saved prayer times…
             </p>
           )}
         </div>
@@ -270,7 +354,6 @@ export default function PrayerTimesPage() {
                 const prayerMins = timeStrToMinutes(data.times[name]);
                 const isNext = nextPrayer?.name === name;
                 const isPast = prayerMins < currentMinutes;
-
                 return (
                   <div
                     key={name}

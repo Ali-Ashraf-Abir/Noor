@@ -236,6 +236,61 @@ function AyahPlayer({
   );
 }
 
+// ── Full-card background progress sweep ────────────────────────────────────────
+function AyahProgressBar({
+  playingAyahIdx,
+  myIdx,
+  globalAudioRef,
+}: {
+  playingAyahIdx: number | null;
+  myIdx: number;
+  globalAudioRef: React.MutableRefObject<HTMLAudioElement | null>;
+}) {
+  const [pct, setPct] = useState(0);
+  const isActive = playingAyahIdx === myIdx;
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isActive) {
+      setPct(0);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      return;
+    }
+    const tick = () => {
+      const audio = globalAudioRef.current;
+      if (audio && audio.duration > 0) {
+        setPct((audio.currentTime / audio.duration) * 100);
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [isActive, globalAudioRef]);
+
+  if (!isActive) return null;
+
+  return (
+    <div aria-hidden className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+      {/* Filled region */}
+      <div
+        className="absolute inset-y-0 left-0"
+        style={{
+          width: `${pct}%`,
+          background: "linear-gradient(135deg, color-mix(in srgb, var(--gold) 14%, transparent) 0%, color-mix(in srgb, var(--accent) 10%, transparent) 100%)",
+        }}
+      />
+      {/* Soft glowing leading edge */}
+      <div
+        className="absolute inset-y-0 w-10 -translate-x-1/2"
+        style={{
+          left: `${pct}%`,
+          background: "linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 35%, transparent), transparent)",
+        }}
+      />
+    </div>
+  );
+}
+
 // ── Surah audio player ─────────────────────────────────────────────────────────
 function SurahAudioPlayer({
   ayahs,
@@ -752,16 +807,24 @@ export default function QuranPage() {
                   <div
                     key={ayah.number}
                     ref={el => { ayahRefs.current[realIdx] = el; }}
-                    className={`card-glass group rounded-2xl p-5 transition-all duration-200 ${
+                    className={`relative card-glass group rounded-2xl overflow-hidden transition-all duration-200 ${
                       isActive ? "border-[var(--border-accent)]" : ""
                     } ${isBookmarked ? "border-[var(--border-accent)]" : ""}`}
                     style={isActive
-                      ? { background: "color-mix(in srgb, var(--accent) 8%, var(--card-bg))", boxShadow: "0 0 0 1px var(--border-accent)" }
+                      ? { boxShadow: "0 0 0 1px var(--border-accent)" }
                       : isBookmarked
                       ? { background: "var(--gold-muted)" }
                       : undefined
                     }
                   >
+                    {/* Full-card background sweep */}
+                    <AyahProgressBar
+                      playingAyahIdx={playingAyahIdx}
+                      myIdx={realIdx}
+                      globalAudioRef={audioRef}
+                    />
+
+                    <div className="relative p-5">
                     {/* Ayah number + actions */}
                     <div className="flex items-center justify-between mb-4">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold font-mono border transition-colors ${
@@ -831,6 +894,7 @@ export default function QuranPage() {
                         setSurahPlaying(false);
                       }}
                     />
+                    </div>{/* end p-5 */}
                   </div>
                 );
               })}
