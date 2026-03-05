@@ -3,7 +3,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ThemeTest from "@/components/ThemeTest";
 
 export const metadata: Metadata = {
   title: "Noor — Islamic Prayer Times, Fasting & 99 Names",
@@ -16,9 +15,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="pattern-bg theme-transition min-h-screen flex flex-col">
         <ThemeProvider>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pt-16 md:pt-[4.5rem]">{children}</main>
           <Footer />
-
         </ThemeProvider>
       </body>
     </html>

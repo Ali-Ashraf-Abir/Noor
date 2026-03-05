@@ -130,7 +130,7 @@ function HadithBox() {
         </button>
       </div>
 
-      <div className="px-6 py-6">
+      <div className="px-6 py-6 max-h-52 overflow-y-auto">
         {loading ? (
           <div className="space-y-3 animate-pulse">
             <div className="h-3 bg-[var(--bg-elevated)] rounded w-full" />

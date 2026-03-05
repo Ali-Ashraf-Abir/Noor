@@ -7,18 +7,59 @@ import { useTheme } from "@/context/ThemeContext";
 import { THEME_OPTIONS } from "@/lib/api";
 import type { Theme } from "@/types";
 
+// ── Nav icons ──────────────────────────────────────────────────────────────────
+const NavIcons: Record<string, React.ReactNode> = {
+  Home: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12L12 3l9 9" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 21V12h6v9" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 10v11h14V10" />
+    </svg>
+  ),
+  PrayerTimes: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V11.5C5 10.1 5.9 9 7 9h10c1.1 0 2 1.1 2 2.5V21" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 21v-5a3 3 0 0 1 6 0v5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9V6m0 0C12 4.5 11 3 9.5 2.5 10.5 4 11.2 5 12 6Zm0 0c0-1.5 1-3 2.5-3.5C13.5 4 12.8 5 12 6Z" />
+    </svg>
+  ),
+  Fasting: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 0 1 8.646 3.646 9.003 9.003 0 0 0 12 21a9.003 9.003 0 0 0 8.354-5.646Z" />
+    </svg>
+  ),
+  Names: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+    </svg>
+  ),
+  Hadith: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
+      <path strokeLinecap="round" d="M8 7h8M8 11h6M8 15h4" />
+    </svg>
+  ),
+  Quran: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+  ),
+};
+
 const NAV_LINKS = [
-  { href: "/",               label: "Home",         icon: "⌂" },
-  { href: "/prayer-times",   label: "Prayer Times", icon: "🕌" },
-  { href: "/fasting",        label: "Fasting",      icon: "🌙" },
-  { href: "/asma-ul-husna", label: "99 Names",     icon: "✨" },
-  { href: "/hadith",         label: "Hadith",       icon: "📖" },
+  { href: "/",              label: "Home",         icon: NavIcons.Home        },
+  { href: "/prayer-times",  label: "Prayer Times", icon: NavIcons.PrayerTimes },
+  { href: "/fasting",       label: "Fasting",      icon: NavIcons.Fasting     },
+  { href: "/asma-ul-husna", label: "99 Names",     icon: NavIcons.Names       },
+  { href: "/hadith",        label: "Hadith",       icon: NavIcons.Hadith      },
+  { href: "/quran",         label: "Quran",        icon: NavIcons.Quran       },
 ];
 
 export default function Navbar() {
-  const [scrolled, setScrolled]       = useState(false);
-  const [mobileOpen, setMobileOpen]   = useState(false);
-  const [themeOpen, setThemeOpen]     = useState(false);
+  const [scrolled, setScrolled]     = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [themeOpen, setThemeOpen]   = useState(false);
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
 
@@ -48,7 +89,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop Links */}
+        {/* Desktop links */}
         <div className="hidden md:flex items-center gap-1">
           {NAV_LINKS.map((link) => {
             const active = pathname === link.href;
@@ -56,12 +97,15 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                   active
                     ? "text-[var(--gold-light)] bg-[var(--gold-muted)] border border-[var(--border-accent)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                 }`}
               >
+                <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
+                  {link.icon}
+                </span>
                 {link.label}
               </Link>
             );
@@ -71,7 +115,7 @@ export default function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-2">
 
-          {/* Theme toggle button — opens panel below */}
+          {/* Theme picker */}
           <div className="relative">
             <button
               type="button"
@@ -85,12 +129,15 @@ export default function Navbar() {
               <span className="hidden sm:inline text-xs font-medium">
                 {THEME_OPTIONS.find((t) => t.value === theme)?.label ?? "Theme"}
               </span>
-              <svg className={`w-3 h-3 transition-transform ${themeOpen ? "rotate-180" : ""}`} viewBox="0 0 12 12" fill="currentColor">
+              <svg
+                className={`w-3 h-3 transition-transform ${themeOpen ? "rotate-180" : ""}`}
+                viewBox="0 0 12 12"
+                fill="currentColor"
+              >
                 <path d="M6 8L1 3h10L6 8z" />
               </svg>
             </button>
 
-            {/* Theme panel — rendered as a portal-like absolute block, NOT conditionally unmounted via state race */}
             <div
               className={`absolute right-0 top-full mt-2 w-48 rounded-xl overflow-hidden
                           bg-[var(--bg-surface)] border border-[var(--border)] shadow-card z-[999]
@@ -101,10 +148,7 @@ export default function Navbar() {
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => {
-                    setTheme(opt.value as Theme);
-                    setThemeOpen(false);
-                  }}
+                  onClick={() => { setTheme(opt.value as Theme); setThemeOpen(false); }}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                     theme === opt.value
                       ? "bg-[var(--gold-muted)] text-[var(--gold-light)] font-semibold"
@@ -142,10 +186,10 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile menu */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ${
-          mobileOpen ? "max-h-96" : "max-h-0"
+          mobileOpen ? "max-h-[32rem]" : "max-h-0"
         } bg-[var(--bg-overlay)] backdrop-blur-xl border-b border-[var(--border)]`}
       >
         <div className="px-4 py-3 flex flex-col gap-1">
@@ -162,13 +206,15 @@ export default function Navbar() {
                     : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
                 }`}
               >
-                <span>{link.icon}</span>
+                <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
+                  {link.icon}
+                </span>
                 {link.label}
               </Link>
             );
           })}
 
-          {/* Theme switcher inside mobile menu — always visible, no dropdown needed */}
+          {/* Theme switcher */}
           <div className="mt-2 pt-2 border-t border-[var(--border)]">
             <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider px-4 mb-2">Theme</p>
             <div className="grid grid-cols-2 gap-2 px-1">
@@ -176,10 +222,7 @@ export default function Navbar() {
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => {
-                    setTheme(opt.value as Theme);
-                    setMobileOpen(false);
-                  }}
+                  onClick={() => { setTheme(opt.value as Theme); setMobileOpen(false); }}
                   className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all ${
                     theme === opt.value
                       ? "bg-[var(--gold-muted)] text-[var(--gold-light)] border border-[var(--border-accent)] font-semibold"
