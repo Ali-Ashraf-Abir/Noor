@@ -1,26 +1,405 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Amiri:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap');
 @import "tailwindcss";
-
+/* ============================================================
+   FONT VARIABLES
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-arabic:  'Amiri', serif;
+  --font-mono:    'JetBrains Mono', monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ============================================================
+   THEME: DARK  (deep teal + gold)
+   ============================================================ */
+:root,
+[data-theme="dark"] {
+  --bg-base:        #0e2624;
+  --bg-surface:     #183430;
+  --bg-elevated:    #214540;
+  --bg-overlay:     rgba(14, 38, 36, 0.96);
+
+  --border:         rgba(255, 255, 255, 0.14);
+  --border-strong:  rgba(255, 255, 255, 0.26);
+  --border-accent:  rgba(232, 201, 122, 0.55);
+
+  --text-primary:   #f8f4ee;
+  --text-secondary: #c8c0b0;
+  --text-muted:     #a89880;
+
+  --text-accent:    #f0d080;
+
+  --gold:           #d4b05a;
+  --gold-light:     #f0d080;
+  --gold-dark:      #b08830;
+  --gold-muted:     rgba(212, 176, 90, 0.20);
+
+  --accent:         #3aaa8a;
+  --accent-hover:   #44cc99;
+
+  --shadow-color:   rgba(0, 0, 0, 0.50);
+  --shadow-gold:    rgba(212, 176, 90, 0.30);
+  --shadow-glow:    rgba(58, 170, 138, 0.35);
+
+  --card-bg:        #1d4540;
+  --card-bg-hover:  #255550;
+
+  --pattern-opacity: 0.07;
+  --scrollbar-thumb: rgba(212, 176, 90, 0.35);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================================
+   THEME: LIGHT  (ivory parchment + rich teal)
+   ============================================================ */
+[data-theme="light"] {
+  --bg-base:        #f5f0e6;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #ede8dc;
+  --bg-overlay:     rgba(245, 240, 230, 0.97);
+
+  --border:         rgba(0, 0, 0, 0.12);
+  --border-strong:  rgba(0, 0, 0, 0.22);
+  --border-accent:  rgba(14, 90, 74, 0.40);
+
+  --text-primary:   #12211f;
+  --text-secondary: #3a4e4a;
+  --text-muted:     #4e6460;
+
+  --text-accent:    #0e5a4a;
+
+  --gold:           #a87825;
+  --gold-light:     #c99030;
+  --gold-dark:      #7a5510;
+  --gold-muted:     rgba(168, 120, 37, 0.14);
+
+  --accent:         #0e5a4a;
+  --accent-hover:   #156b58;
+
+  --shadow-color:   rgba(0, 0, 0, 0.12);
+  --shadow-gold:    rgba(168, 120, 37, 0.22);
+  --shadow-glow:    rgba(14, 90, 74, 0.20);
+
+  --card-bg:        #ffffff;
+  --card-bg-hover:  #f8f4ee;
+
+  --pattern-opacity: 0.04;
+  --scrollbar-thumb: rgba(168, 120, 37, 0.30);
 }
+
+/* ============================================================
+   THEME: WARM NIGHT  (deep amber + cream)
+   ============================================================ */
+[data-theme="warm"] {
+  --bg-base:        #1c1005;
+  --bg-surface:     #2a1a08;
+  --bg-elevated:    #38220c;
+  --bg-overlay:     rgba(28, 16, 5, 0.96);
+
+  --border:         rgba(255, 210, 140, 0.18);
+  --border-strong:  rgba(255, 210, 140, 0.32);
+  --border-accent:  rgba(220, 155, 50, 0.55);
+
+  --text-primary:   #fdf3e3;
+  --text-secondary: #d4b88a;
+  --text-muted:     #c09a68;
+
+  --text-accent:    #f0c060;
+
+  --gold:           #dc9b32;
+  --gold-light:     #f0c060;
+  --gold-dark:      #a87020;
+  --gold-muted:     rgba(220, 155, 50, 0.20);
+
+  --accent:         #c0601a;
+  --accent-hover:   #d87830;
+
+  --shadow-color:   rgba(0, 0, 0, 0.55);
+  --shadow-gold:    rgba(220, 155, 50, 0.32);
+  --shadow-glow:    rgba(192, 96, 26, 0.35);
+
+  --card-bg:        #38220c;
+  --card-bg-hover:  #44280e;
+
+  --pattern-opacity: 0.06;
+  --scrollbar-thumb: rgba(220, 155, 50, 0.35);
+}
+
+/* ============================================================
+   THEME: MIDNIGHT BLUE  (deep navy + lavender-gold)
+   ============================================================ */
+[data-theme="midnight"] {
+  --bg-base:        #090d1e;
+  --bg-surface:     #111628;
+  --bg-elevated:    #1a2038;
+  --bg-overlay:     rgba(9, 13, 30, 0.96);
+
+  --border:         rgba(180, 200, 255, 0.16);
+  --border-strong:  rgba(180, 200, 255, 0.28);
+  --border-accent:  rgba(180, 155, 230, 0.55);
+
+  --text-primary:   #eaedf8;
+  --text-secondary: #a8b0d0;
+  --text-muted:     #bbc3f0;
+
+  --text-accent:    #c8b8f0;
+
+  --gold:           #b8a0e0;
+  --gold-light:     #f0eaff;
+  --gold-dark:      #9070c0;
+  --gold-muted:     rgba(184, 160, 224, 0.18);
+
+  --accent:         #4860d8;
+  --accent-hover:   #5878f0;
+
+  --shadow-color:   rgba(0, 0, 0, 0.60);
+  --shadow-gold:    rgba(184, 160, 224, 0.28);
+  --shadow-glow:    rgba(72, 96, 216, 0.35);
+
+  --card-bg:        #1a2038;
+  --card-bg-hover:  #222840;
+
+  --pattern-opacity: 0.06;
+  --scrollbar-thumb: rgba(184, 160, 224, 0.35);
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  transition: background-color 0.35s ease, color 0.35s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
+
+/* ============================================================
+   ISLAMIC GEOMETRIC PATTERN BACKGROUND
+   ============================================================ */
+.pattern-bg {
+  background-color: var(--bg-base);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='white' stroke-width='0.5' opacity='1'%3E%3Cpolygon points='60,8 72,22 88,22 98,35 98,52 110,60 98,68 98,85 88,98 72,98 60,112 48,98 32,98 22,85 22,68 10,60 22,52 22,35 32,22 48,22'/%3E%3Cpolygon points='60,24 70,34 82,34 90,44 90,56 100,60 90,64 90,76 82,86 70,86 60,96 50,86 38,86 30,76 30,64 20,60 30,56 30,44 38,34 50,34'/%3E%3Cpolygon points='60,40 72,52 60,64 48,52'/%3E%3Cline x1='60' y1='8' x2='60' y2='40'/%3E%3Cline x1='110' y1='60' x2='72' y2='52'/%3E%3Cline x1='60' y1='112' x2='60' y2='64'/%3E%3Cline x1='10' y1='60' x2='48' y2='52'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 120px 120px;
+}
+
+.pattern-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: inherit;
+  background-size: inherit;
+  background-repeat: inherit;
+  opacity: var(--pattern-opacity);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ============================================================
+   COMPONENT UTILITIES
+   ============================================================ */
+
+/* Solid surface card */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.card:hover {
+  border-color: var(--border-accent);
+  box-shadow: 0 8px 32px var(--shadow-color);
+}
+
+/* Card glass — solid surface, no transparency issues */
+.card-glass {
+  background: var(--card-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 1rem;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+}
+.card-glass:hover {
+  background: var(--card-bg-hover);
+  border-color: var(--border-accent);
+  box-shadow: 0 6px 28px var(--shadow-color);
+}
+
+/* Gold gradient button */
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-light) 50%, var(--gold-dark) 100%);
+  color: var(--bg-base);
+  font-weight: 700;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.btn-gold:hover   { opacity: 0.9; transform: translateY(-1px); }
+.btn-gold:active  { transform: translateY(0); }
+.btn-gold:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* Gold gradient text */
+.text-gold-gradient {
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold-light), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Active prayer highlight */
+.prayer-active {
+  background: linear-gradient(135deg, var(--gold-muted) 0%, transparent 100%);
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 24px var(--shadow-gold);
+}
+
+/* Ornament divider */
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-muted);
+}
+.ornament-divider::before,
+.ornament-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Input */
+.input {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.6rem;
+  color: var(--text-primary);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  outline: none;
+}
+.input::placeholder { color: var(--text-muted); }
+.input:focus {
+  border-color: var(--border-accent);
+  box-shadow: 0 0 0 3px var(--gold-muted);
+}
+
+/* Loader spinner */
+.spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--gold-muted);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.badge-gold {
+  background: var(--gold-muted);
+  color: var(--gold-light);
+  border: 1px solid var(--border-accent);
+}
+
+/* Theme transition */
+.theme-transition,
+.theme-transition * {
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease !important;
+}
+
+/* ============================================================
+   COUNTDOWN TIMER
+   ============================================================ */
+.countdown-segment {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  min-width: 3.2rem;
+  text-align: center;
+}
+.countdown-segment .value {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--gold-light);
+  line-height: 1.1;
+}
+.countdown-segment .label {
+  display: block;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+.data-table { width: 100%; border-collapse: collapse; }
+
+.data-table th {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-strong);
+}
+.data-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+.data-table tr:hover td { background: var(--gold-muted); }
+.data-table tr.today td { background: var(--gold-muted); }
+
+/* ============================================================
+   MODAL OVERLAY
+   ============================================================ */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 640px) {
+  .countdown-segment .value { font-size: 1.2rem; }
 }
