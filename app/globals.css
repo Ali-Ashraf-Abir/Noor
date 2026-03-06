@@ -1,13 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Amiri:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap');
 @import "tailwindcss";
+
 /* ============================================================
    FONT VARIABLES
    ============================================================ */
 :root {
   --font-display: 'Cormorant Garamond', serif;
-  --font-body:    'DM Sans', sans-serif;
-  --font-arabic:  'Amiri', serif;
-  --font-mono:    'JetBrains Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+  --font-arabic: 'Amiri', serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 /* ============================================================
@@ -15,35 +16,35 @@
    ============================================================ */
 :root,
 [data-theme="dark"] {
-  --bg-base:        #0e2624;
-  --bg-surface:     #183430;
-  --bg-elevated:    #214540;
-  --bg-overlay:     rgba(14, 38, 36, 0.96);
+  --bg-base: #0e2624;
+  --bg-surface: #183430;
+  --bg-elevated: #214540;
+  --bg-overlay: rgba(14, 38, 36, 0.96);
 
-  --border:         rgba(255, 255, 255, 0.14);
-  --border-strong:  rgba(255, 255, 255, 0.26);
-  --border-accent:  rgba(232, 201, 122, 0.55);
+  --border: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.26);
+  --border-accent: rgba(232, 201, 122, 0.55);
 
-  --text-primary:   #f8f4ee;
+  --text-primary: #f8f4ee;
   --text-secondary: #c8c0b0;
-  --text-muted:     #a89880;
+  --text-muted: #a89880;
 
-  --text-accent:    #f0d080;
+  --text-accent: #f0d080;
 
-  --gold:           #d4b05a;
-  --gold-light:     #f0d080;
-  --gold-dark:      #b08830;
-  --gold-muted:     rgba(212, 176, 90, 0.20);
+  --gold: #d4b05a;
+  --gold-light: #f0d080;
+  --gold-dark: #b08830;
+  --gold-muted: rgba(212, 176, 90, 0.20);
 
-  --accent:         #3aaa8a;
-  --accent-hover:   #44cc99;
+  --accent: #3aaa8a;
+  --accent-hover: #44cc99;
 
-  --shadow-color:   rgba(0, 0, 0, 0.50);
-  --shadow-gold:    rgba(212, 176, 90, 0.30);
-  --shadow-glow:    rgba(58, 170, 138, 0.35);
+  --shadow-color: rgba(0, 0, 0, 0.50);
+  --shadow-gold: rgba(212, 176, 90, 0.30);
+  --shadow-glow: rgba(58, 170, 138, 0.35);
 
-  --card-bg:        #1d4540;
-  --card-bg-hover:  #255550;
+  --card-bg: #1d4540;
+  --card-bg-hover: #255550;
 
   --pattern-opacity: 0.07;
   --scrollbar-thumb: rgba(212, 176, 90, 0.35);
@@ -53,35 +54,35 @@
    THEME: LIGHT  (ivory parchment + rich teal)
    ============================================================ */
 [data-theme="light"] {
-  --bg-base:        #f5f0e6;
-  --bg-surface:     #ffffff;
-  --bg-elevated:    #ede8dc;
-  --bg-overlay:     rgba(245, 240, 230, 0.97);
+  --bg-base: #f5f0e6;
+  --bg-surface: #ffffff;
+  --bg-elevated: #ede8dc;
+  --bg-overlay: rgba(245, 240, 230, 0.97);
 
-  --border:         rgba(0, 0, 0, 0.12);
-  --border-strong:  rgba(0, 0, 0, 0.22);
-  --border-accent:  rgba(14, 90, 74, 0.40);
+  --border: rgba(0, 0, 0, 0.12);
+  --border-strong: rgba(0, 0, 0, 0.22);
+  --border-accent: rgba(14, 90, 74, 0.40);
 
-  --text-primary:   #12211f;
+  --text-primary: #12211f;
   --text-secondary: #3a4e4a;
-  --text-muted:     #4e6460;
+  --text-muted: #4e6460;
 
-  --text-accent:    #0e5a4a;
+  --text-accent: #0e5a4a;
 
-  --gold:           #a87825;
-  --gold-light:     #c99030;
-  --gold-dark:      #7a5510;
-  --gold-muted:     rgba(168, 120, 37, 0.14);
+  --gold: #a87825;
+  --gold-light: #c99030;
+  --gold-dark: #7a5510;
+  --gold-muted: rgba(168, 120, 37, 0.14);
 
-  --accent:         #0e5a4a;
-  --accent-hover:   #156b58;
+  --accent: #0e5a4a;
+  --accent-hover: #156b58;
 
-  --shadow-color:   rgba(0, 0, 0, 0.12);
-  --shadow-gold:    rgba(168, 120, 37, 0.22);
-  --shadow-glow:    rgba(14, 90, 74, 0.20);
+  --shadow-color: rgba(0, 0, 0, 0.12);
+  --shadow-gold: rgba(168, 120, 37, 0.22);
+  --shadow-glow: rgba(14, 90, 74, 0.20);
 
-  --card-bg:        #ffffff;
-  --card-bg-hover:  #f8f4ee;
+  --card-bg: #ffffff;
+  --card-bg-hover: #f8f4ee;
 
   --pattern-opacity: 0.04;
   --scrollbar-thumb: rgba(168, 120, 37, 0.30);
@@ -91,35 +92,35 @@
    THEME: WARM NIGHT  (deep amber + cream)
    ============================================================ */
 [data-theme="warm"] {
-  --bg-base:        #1c1005;
-  --bg-surface:     #2a1a08;
-  --bg-elevated:    #38220c;
-  --bg-overlay:     rgba(28, 16, 5, 0.96);
+  --bg-base: #1c1005;
+  --bg-surface: #2a1a08;
+  --bg-elevated: #38220c;
+  --bg-overlay: rgba(28, 16, 5, 0.96);
 
-  --border:         rgba(255, 210, 140, 0.18);
-  --border-strong:  rgba(255, 210, 140, 0.32);
-  --border-accent:  rgba(220, 155, 50, 0.55);
+  --border: rgba(255, 210, 140, 0.18);
+  --border-strong: rgba(255, 210, 140, 0.32);
+  --border-accent: rgba(220, 155, 50, 0.55);
 
-  --text-primary:   #fdf3e3;
+  --text-primary: #fdf3e3;
   --text-secondary: #d4b88a;
-  --text-muted:     #c09a68;
+  --text-muted: #c09a68;
 
-  --text-accent:    #f0c060;
+  --text-accent: #f0c060;
 
-  --gold:           #dc9b32;
-  --gold-light:     #f0c060;
-  --gold-dark:      #a87020;
-  --gold-muted:     rgba(220, 155, 50, 0.20);
+  --gold: #dc9b32;
+  --gold-light: #f0c060;
+  --gold-dark: #a87020;
+  --gold-muted: rgba(220, 155, 50, 0.20);
 
-  --accent:         #c0601a;
-  --accent-hover:   #d87830;
+  --accent: #c0601a;
+  --accent-hover: #d87830;
 
-  --shadow-color:   rgba(0, 0, 0, 0.55);
-  --shadow-gold:    rgba(220, 155, 50, 0.32);
-  --shadow-glow:    rgba(192, 96, 26, 0.35);
+  --shadow-color: rgba(0, 0, 0, 0.55);
+  --shadow-gold: rgba(220, 155, 50, 0.32);
+  --shadow-glow: rgba(192, 96, 26, 0.35);
 
-  --card-bg:        #38220c;
-  --card-bg-hover:  #44280e;
+  --card-bg: #38220c;
+  --card-bg-hover: #44280e;
 
   --pattern-opacity: 0.06;
   --scrollbar-thumb: rgba(220, 155, 50, 0.35);
@@ -129,35 +130,35 @@
    THEME: MIDNIGHT BLUE  (deep navy + lavender-gold)
    ============================================================ */
 [data-theme="midnight"] {
-  --bg-base:        #090d1e;
-  --bg-surface:     #111628;
-  --bg-elevated:    #1a2038;
-  --bg-overlay:     rgba(9, 13, 30, 0.96);
+  --bg-base: #090d1e;
+  --bg-surface: #111628;
+  --bg-elevated: #1a2038;
+  --bg-overlay: rgba(9, 13, 30, 0.96);
 
-  --border:         rgba(180, 200, 255, 0.16);
-  --border-strong:  rgba(180, 200, 255, 0.28);
-  --border-accent:  rgba(180, 155, 230, 0.55);
+  --border: rgba(180, 200, 255, 0.16);
+  --border-strong: rgba(180, 200, 255, 0.28);
+  --border-accent: rgba(180, 155, 230, 0.55);
 
-  --text-primary:   #eaedf8;
+  --text-primary: #eaedf8;
   --text-secondary: #a8b0d0;
-  --text-muted:     #bbc3f0;
+  --text-muted: #bbc3f0;
 
-  --text-accent:    #c8b8f0;
+  --text-accent: #c8b8f0;
 
-  --gold:           #b8a0e0;
-  --gold-light:     #f0eaff;
-  --gold-dark:      #9070c0;
-  --gold-muted:     rgba(184, 160, 224, 0.18);
+  --gold: #b8a0e0;
+  --gold-light: #f0eaff;
+  --gold-dark: #9070c0;
+  --gold-muted: rgba(184, 160, 224, 0.18);
 
-  --accent:         #4860d8;
-  --accent-hover:   #5878f0;
+  --accent: #4860d8;
+  --accent-hover: #5878f0;
 
-  --shadow-color:   rgba(0, 0, 0, 0.60);
-  --shadow-gold:    rgba(184, 160, 224, 0.28);
-  --shadow-glow:    rgba(72, 96, 216, 0.35);
+  --shadow-color: rgba(0, 0, 0, 0.60);
+  --shadow-gold: rgba(184, 160, 224, 0.28);
+  --shadow-glow: rgba(72, 96, 216, 0.35);
 
-  --card-bg:        #1a2038;
-  --card-bg-hover:  #222840;
+  --card-bg: #1a2038;
+  --card-bg-hover: #222840;
 
   --pattern-opacity: 0.06;
   --scrollbar-thumb: rgba(184, 160, 224, 0.35);
@@ -166,9 +167,13 @@
 /* ============================================================
    BASE STYLES
    ============================================================ */
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   background-color: var(--bg-base);
@@ -181,30 +186,47 @@ body {
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 99px;
+}
 
 /* ============================================================
    ISLAMIC GEOMETRIC PATTERN BACKGROUND
    ============================================================ */
 .pattern-bg {
   background-color: var(--bg-base);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='white' stroke-width='0.5' opacity='1'%3E%3Cpolygon points='60,8 72,22 88,22 98,35 98,52 110,60 98,68 98,85 88,98 72,98 60,112 48,98 32,98 22,85 22,68 10,60 22,52 22,35 32,22 48,22'/%3E%3Cpolygon points='60,24 70,34 82,34 90,44 90,56 100,60 90,64 90,76 82,86 70,86 60,96 50,86 38,86 30,76 30,64 20,60 30,56 30,44 38,34 50,34'/%3E%3Cpolygon points='60,40 72,52 60,64 48,52'/%3E%3Cline x1='60' y1='8' x2='60' y2='40'/%3E%3Cline x1='110' y1='60' x2='72' y2='52'/%3E%3Cline x1='60' y1='112' x2='60' y2='64'/%3E%3Cline x1='10' y1='60' x2='48' y2='52'/%3E%3C/g%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 120px 120px;
+  position: relative;
 }
 
 .pattern-bg::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: inherit;
-  background-size: inherit;
-  background-repeat: inherit;
-  opacity: var(--pattern-opacity);
+  background:
+    radial-gradient(ellipse 55% 40% at 0% 0%, color-mix(in srgb, var(--gold, #c9a84c) 10%, transparent), transparent 55%),
+    radial-gradient(ellipse 45% 55% at 100% 100%, color-mix(in srgb, var(--gold, #c9a84c) 5%, transparent), transparent 55%);
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
+}
+
+.pattern-bg::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.028)' stroke-width='0.6'%3E%3Crect x='14' y='14' width='28' height='28' transform='rotate(45 28 28)'/%3E%3Ccircle cx='28' cy='28' r='18'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 56px 56px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ============================================================
@@ -218,6 +240,7 @@ body {
   border-radius: 1rem;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
+
 .card:hover {
   border-color: var(--border-accent);
   box-shadow: 0 8px 32px var(--shadow-color);
@@ -230,6 +253,7 @@ body {
   border-radius: 1rem;
   transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
 }
+
 .card-glass:hover {
   background: var(--card-bg-hover);
   border-color: var(--border-accent);
@@ -243,9 +267,21 @@ body {
   font-weight: 700;
   transition: opacity 0.2s, transform 0.2s;
 }
-.btn-gold:hover   { opacity: 0.9; transform: translateY(-1px); }
-.btn-gold:active  { transform: translateY(0); }
-.btn-gold:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+.btn-gold:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-gold:active {
+  transform: translateY(0);
+}
+
+.btn-gold:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* Gold gradient text */
 .text-gold-gradient {
@@ -269,6 +305,7 @@ body {
   gap: 1rem;
   color: var(--text-muted);
 }
+
 .ornament-divider::before,
 .ornament-divider::after {
   content: '';
@@ -290,7 +327,11 @@ body {
   width: 100%;
   outline: none;
 }
-.input::placeholder { color: var(--text-muted); }
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
 .input:focus {
   border-color: var(--border-accent);
   box-shadow: 0 0 0 3px var(--gold-muted);
@@ -306,7 +347,12 @@ body {
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Badge */
 .badge {
@@ -320,6 +366,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
 .badge-gold {
   background: var(--gold-muted);
   color: var(--gold-light);
@@ -347,6 +394,7 @@ body {
   min-width: 3.2rem;
   text-align: center;
 }
+
 .countdown-segment .value {
   display: block;
   font-family: var(--font-mono);
@@ -355,6 +403,7 @@ body {
   color: var(--gold-light);
   line-height: 1.1;
 }
+
 .countdown-segment .label {
   display: block;
   font-size: 0.6rem;
@@ -367,7 +416,10 @@ body {
 /* ============================================================
    TABLE
    ============================================================ */
-.data-table { width: 100%; border-collapse: collapse; }
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
 
 .data-table th {
   background: var(--bg-elevated);
@@ -380,14 +432,21 @@ body {
   text-align: left;
   border-bottom: 1px solid var(--border-strong);
 }
+
 .data-table td {
   padding: 0.7rem 1rem;
   border-bottom: 1px solid var(--border);
   font-size: 0.875rem;
   color: var(--text-primary);
 }
-.data-table tr:hover td { background: var(--gold-muted); }
-.data-table tr.today td { background: var(--gold-muted); }
+
+.data-table tr:hover td {
+  background: var(--gold-muted);
+}
+
+.data-table tr.today td {
+  background: var(--gold-muted);
+}
 
 /* ============================================================
    MODAL OVERLAY
@@ -401,5 +460,7 @@ body {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 640px) {
-  .countdown-segment .value { font-size: 1.2rem; }
+  .countdown-segment .value {
+    font-size: 1.2rem;
+  }
 }

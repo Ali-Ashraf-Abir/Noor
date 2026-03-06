@@ -8,7 +8,7 @@ const LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[var(--border)] mt-20 card-glass">
+    <footer className="border-t border-[var(--border)] card-glass">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 mb-10">
           {/* Brand */}

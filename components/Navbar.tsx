@@ -4,18 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
 import { THEME_OPTIONS } from "@/lib/api";
 import type { Theme } from "@/types";
 
 // ── Nav icons ──────────────────────────────────────────────────────────────────
 const NavIcons: Record<string, React.ReactNode> = {
-  Home: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12L12 3l9 9" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 21V12h6v9" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 10v11h14V10" />
-    </svg>
-  ),
   PrayerTimes: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V11.5C5 10.1 5.9 9 7 9h10c1.1 0 2 1.1 2 2.5V21" />
@@ -45,15 +39,25 @@ const NavIcons: Record<string, React.ReactNode> = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
     </svg>
   ),
+  Learn: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+    </svg>
+  ),
+  Profile: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+    </svg>
+  ),
 };
 
-const NAV_LINKS = [
-  { href: "/",              label: "Home",         icon: NavIcons.Home        },
-  { href: "/prayer-times",  label: "Prayer Times", icon: NavIcons.PrayerTimes },
-  { href: "/fasting",       label: "Fasting",      icon: NavIcons.Fasting     },
-  { href: "/asma-ul-husna", label: "99 Names",     icon: NavIcons.Names       },
-  { href: "/hadith",        label: "Hadith",       icon: NavIcons.Hadith      },
-  { href: "/quran",         label: "Quran",        icon: NavIcons.Quran       },
+const BASE_NAV_LINKS = [
+  { href: "/prayer-times",     label: "Prayer Times", icon: NavIcons.PrayerTimes },
+  { href: "/fasting",          label: "Fasting",      icon: NavIcons.Fasting     },
+  { href: "/asma-ul-husna",    label: "99 Names",     icon: NavIcons.Names       },
+  { href: "/hadith",           label: "Hadith",       icon: NavIcons.Hadith      },
+  { href: "/quran",            label: "Quran",        icon: NavIcons.Quran       },
+  { href: "/learn/categories", label: "Learn",        icon: NavIcons.Learn       },
 ];
 
 export default function Navbar() {
@@ -61,13 +65,25 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [themeOpen, setThemeOpen]   = useState(false);
   const { theme, setTheme } = useTheme();
+  const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
+
+  // Build nav links — append Profile only when logged in
+  const navLinks = isAuthenticated
+    ? [...BASE_NAV_LINKS, { href: "/profile", label: "Profile", icon: NavIcons.Profile }]
+    : BASE_NAV_LINKS;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Close dropdowns when navigating
+  useEffect(() => {
+    setMobileOpen(false);
+    setThemeOpen(false);
+  }, [pathname]);
 
   return (
     <header
@@ -91,8 +107,9 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-1">
-          {NAV_LINKS.map((link) => {
-            const active = pathname === link.href;
+          {navLinks.map((link) => {
+            const active = pathname === link.href || pathname.startsWith(link.href + "/");
+            const isProfile = link.href === "/profile";
             return (
               <Link
                 key={link.href}
@@ -100,13 +117,15 @@ export default function Navbar() {
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                   active
                     ? "text-[var(--gold-light)] bg-[var(--gold-muted)] border border-[var(--border-accent)]"
+                    : isProfile
+                    ? "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] border border-transparent hover:border-[var(--border)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                 }`}
               >
                 <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
                   {link.icon}
                 </span>
-                {link.label}
+                {isProfile && user ? user.username : link.label}
               </Link>
             );
           })}
@@ -189,12 +208,13 @@ export default function Navbar() {
       {/* Mobile menu */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ${
-          mobileOpen ? "max-h-[32rem]" : "max-h-0"
+          mobileOpen ? "max-h-[36rem]" : "max-h-0"
         } bg-[var(--bg-overlay)] backdrop-blur-xl border-b border-[var(--border)]`}
       >
         <div className="px-4 py-3 flex flex-col gap-1">
-          {NAV_LINKS.map((link) => {
-            const active = pathname === link.href;
+          {navLinks.map((link) => {
+            const active = pathname === link.href || pathname.startsWith(link.href + "/");
+            const isProfile = link.href === "/profile";
             return (
               <Link
                 key={link.href}
@@ -209,7 +229,7 @@ export default function Navbar() {
                 <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
                   {link.icon}
                 </span>
-                {link.label}
+                {isProfile && user ? user.username : link.label}
               </Link>
             );
           })}

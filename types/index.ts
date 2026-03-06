@@ -215,3 +215,144 @@ export interface ChaptersResponse {
   message: string;
   chapters: HadithChapter[];
 }
+
+// ── Auth ───────────────────────────────────────────────────────────────────────
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  xp: number;
+  level: number;
+  levelTitle: string;
+  streak: number;
+  isAdmin: boolean;
+}
+
+// ── Category ───────────────────────────────────────────────────────────────────
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  icon?: string;
+  color?: string;
+  createdAt: string;
+}
+
+// ── Chapter Sections ───────────────────────────────────────────────────────────
+export interface StorySection {
+  type: "story";
+  paragraphs: string[];
+}
+
+export interface KeyFactsSection {
+  type: "keyFacts";
+  facts: string[];
+}
+
+export interface CharacterSection {
+  type: "character";
+  name: string;
+  description: string;
+  imageUrl?: string;
+}
+
+export interface QuizQuestion {
+  question: string;
+  options: string[];
+  answerIndex: number;
+}
+
+export interface QuizSection {
+  type: "quiz";
+  questions: QuizQuestion[];
+}
+
+export interface LessonsSection {
+  type: "lessons";
+  points: string[];
+}
+
+export type Section =
+  | StorySection
+  | KeyFactsSection
+  | CharacterSection
+  | QuizSection
+  | LessonsSection;
+
+// ── Chapter ────────────────────────────────────────────────────────────────────
+export interface Chapter {
+  _id: string;
+  title: string;
+  subtitle?: string;
+  category: string;
+  era?: string;
+  order: number;
+  releaseDate: string;
+  estimatedReadingTime: number;
+  thumbnail?: string;
+  isPublished: boolean;
+  sections: Section[];
+  createdAt: string;
+}
+
+export interface ChapterListItem {
+  _id: string;
+  title: string;
+  subtitle?: string;
+  category: string;
+  era?: string;
+  order: number;
+  estimatedReadingTime: number;
+  isPublished: boolean;
+  createdAt: string;
+}
+
+// ── Quiz Results ───────────────────────────────────────────────────────────────
+export interface QuizResult {
+  question: string;
+  yourAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+}
+
+export interface QuizSubmitResponse {
+  success: boolean;
+  score: number;
+  total: number;
+  percentage: number;
+  xpEarned: number;
+  levelUp: boolean;
+  newLevel: number;
+  levelTitle: string;
+  totalXP: number;
+  results: QuizResult[];
+}
+
+// ── Progress ───────────────────────────────────────────────────────────────────
+export interface QuizScore {
+  chapterId: string | { _id: string; title: string };
+  score: number;
+  total: number;
+  percentage: number;
+  xpEarned: number;
+  completedAt: string;
+}
+
+export interface Progress {
+  username: string;
+  xp: number;
+  level: number;
+  levelTitle: string;
+  xpForNextLevel: number;
+  nextLevelTitle: string;
+  streak: number;
+  lastActiveDate: string;
+  completedChapters: ChapterListItem[];
+  completedCount: number;
+  totalChapters: number;
+  completionPercentage: number;
+  quizScores: QuizScore[];
+  totalQuizzesTaken: number;
+  averageQuizScore: number;
+}

@@ -1,23 +1,55 @@
+import axios from "axios";
+import Cookies from "js-cookie";
 import type {
+  Theme,
   PrayerTimesResponse,
   FastingResponse,
   NamesResponse,
+  HadithsResponse,
+  ChaptersResponse,
   Coords,
 } from "@/types";
 
-// ⚠️  Replace with your actual key from islamicapi.com
-export const API_KEY = process.env.NEXT_PUBLIC_ISLAMIC_API_KEY ?? "YOUR_API_KEY";
-const BASE = "https://islamicapi.com/api/v1";
+// ── Backend API (Learning Platform) ───────────────────────────────────────────
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+const api = axios.create({
+  baseURL: API_BASE,
+  headers: { "Content-Type": "application/json" },
+});
+
+api.interceptors.request.use((config) => {
+  const token = Cookies.get("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      Cookies.remove("token");
+      if (typeof window !== "undefined") window.location.href = "/auth/login";
+    }
+    return Promise.reject(err);
+  }
+);
+
+export default api;
+
+// ── Islamic API — proxied through your Express backend ────────────────────────
+// API keys live in your backend .env — never exposed to the browser.
+// Backend routes are mounted at /api/islamic/* (see routes/islamic.js)
 
 export async function fetchPrayerTimes(
   coords: Coords,
   method = 3,
   school = 1
 ): Promise<PrayerTimesResponse> {
-  const url = `${BASE}/prayer-time/?lat=${coords.lat}&lon=${coords.lon}&method=${method}&school=${school}&api_key=${API_KEY}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  const res = await api.get("/api/islamic/prayer-time", {
+    params: { lat: coords.lat, lon: coords.lon, method, school },
+  });
+  return res.data;
 }
 
 export async function fetchFasting(
@@ -25,18 +57,17 @@ export async function fetchFasting(
   method = 3,
   date = ""
 ): Promise<FastingResponse> {
-  const dateQ = date ? `&date=${date}` : "";
-  const url = `${BASE}/fasting/?lat=${coords.lat}&lon=${coords.lon}&method=${method}&api_key=${API_KEY}${dateQ}`;
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  const res = await api.get("/api/islamic/fasting", {
+    params: { lat: coords.lat, lon: coords.lon, method, ...(date && { date }) },
+  });
+  return res.data;
 }
 
 export async function fetchNames(language = "en"): Promise<NamesResponse> {
-  const url = `${BASE}/asma-ul-husna/?language=${language}&api_key=${API_KEY}`;
-  const res = await fetch(url, { cache: "force-cache" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  const res = await api.get("/api/islamic/names", {
+    params: { language },
+  });
+  return res.data;
 }
 
 export function getUserLocation(): Promise<Coords> {
@@ -56,6 +87,61 @@ export function timeStrToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 }
+
+// ── Hadith API — proxied through your Express backend ─────────────────────────
+// Backend routes are mounted at /api/islamic/hadiths/* (see routes/islamic.js)
+
+export async function fetchHadiths(params: {
+  book?: string;
+  chapter?: string;
+  hadithNumber?: string;
+  status?: string;
+  paginate?: number;
+  page?: number;
+}): Promise<HadithsResponse> {
+  const res = await api.get("/api/islamic/hadiths", { params });
+  return res.data;
+}
+
+export async function fetchHadithChapters(bookSlug: string): Promise<ChaptersResponse> {
+  const res = await api.get(`/api/islamic/hadiths/${bookSlug}/chapters`);
+  return res.data;
+}
+
+export async function fetchRandomHadith(): Promise<HadithsResponse> {
+  const book = HADITH_BOOKS[Math.floor(Math.random() * 3)];
+  const randomNum = Math.floor(Math.random() * Math.min(book.count, 500)) + 1;
+  return fetchHadiths({ book: book.slug, hadithNumber: String(randomNum), paginate: 1 });
+}
+
+// ── Static Constants ───────────────────────────────────────────────────────────
+export const THEME_OPTIONS: { value: Theme; label: string; icon: string }[] = [
+  { value: "dark",     label: "Deep Teal",     icon: "🌿" },
+  { value: "light",    label: "Parchment",     icon: "📜" },
+  { value: "warm",     label: "Warm Night",    icon: "🪔" },
+  { value: "midnight", label: "Midnight Blue", icon: "🌌" },
+];
+
+export const CATEGORY_META: Record<string, { label: string; icon: string; color: string }> = {
+  seerah:        { label: "Seerah",        icon: "🌙", color: "#4CAF50" },
+  prophets:      { label: "Prophets",      icon: "⭐", color: "#2196F3" },
+  sahabah:       { label: "Sahabah",       icon: "🛡️", color: "#9C27B0" },
+  history:       { label: "History",       icon: "📜", color: "#FF5722" },
+  islamic_facts: { label: "Islamic Facts", icon: "💎", color: "#FF9800" },
+  hadith:        { label: "Hadith",        icon: "📖", color: "#009688" },
+};
+
+export const HADITH_BOOKS = [
+  { slug: "sahih-bukhari",     label: "Sahih Bukhari",       count: 7276 },
+  { slug: "sahih-muslim",      label: "Sahih Muslim",        count: 7564 },
+  { slug: "al-tirmidhi",       label: "Jami' Al-Tirmidhi",   count: 3956 },
+  { slug: "abu-dawood",        label: "Sunan Abu Dawood",    count: 5274 },
+  { slug: "ibn-e-majah",       label: "Sunan Ibn-e-Majah",   count: 4341 },
+  { slug: "sunan-nasai",       label: "Sunan An-Nasa'i",     count: 5762 },
+  { slug: "mishkat",           label: "Mishkat Al-Masabih",  count: 6294 },
+  { slug: "musnad-ahmad",      label: "Musnad Ahmad",        count: 4305 },
+  { slug: "al-silsila-sahiha", label: "Al-Silsila Sahiha",   count: 4035 },
+];
 
 export const METHODS = [
   { value: 3,  label: "Muslim World League" },
@@ -89,80 +175,31 @@ export const PRAYER_META: Record<string, { icon: string; color: string }> = {
 };
 
 export const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "ar", label: "Arabic" },
-  { code: "ur", label: "Urdu" },
+  { code: "en", label: "English"    },
+  { code: "ar", label: "Arabic"     },
+  { code: "ur", label: "Urdu"       },
   { code: "id", label: "Indonesian" },
-  { code: "ms", label: "Malay" },
-  { code: "tr", label: "Turkish" },
-  { code: "fr", label: "French" },
-  { code: "de", label: "German" },
-  { code: "es", label: "Spanish" },
-  { code: "bn", label: "Bengali" },
-  { code: "hi", label: "Hindi" },
-  { code: "fa", label: "Persian" },
-  { code: "ru", label: "Russian" },
-  { code: "zh", label: "Chinese" },
-  { code: "ja", label: "Japanese" },
-  { code: "ko", label: "Korean" },
-  { code: "so", label: "Somali" },
-  { code: "sw", label: "Swahili" },
-  { code: "ha", label: "Hausa" },
+  { code: "ms", label: "Malay"      },
+  { code: "tr", label: "Turkish"    },
+  { code: "fr", label: "French"     },
+  { code: "de", label: "German"     },
+  { code: "es", label: "Spanish"    },
+  { code: "bn", label: "Bengali"    },
+  { code: "hi", label: "Hindi"      },
+  { code: "fa", label: "Persian"    },
+  { code: "ru", label: "Russian"    },
+  { code: "zh", label: "Chinese"    },
+  { code: "ja", label: "Japanese"   },
+  { code: "ko", label: "Korean"     },
+  { code: "so", label: "Somali"     },
+  { code: "sw", label: "Swahili"    },
+  { code: "ha", label: "Hausa"      },
   { code: "pt", label: "Portuguese" },
 ];
 
-export const THEME_OPTIONS = [
-  { value: "dark"     as const, label: "Deep Teal",     icon: "🌿" },
-  { value: "light"    as const, label: "Parchment",     icon: "📜" },
-  { value: "warm"     as const, label: "Warm Night",    icon: "🪔" },
-  { value: "midnight" as const, label: "Midnight Blue", icon: "🌌" },
-];
-
-// ── Hadith API ─────────────────────────────────────────────────────────────────
-export const HADITH_API_KEY = process.env.NEXT_PUBLIC_HADITH_API_KEY ?? "YOUR_HADITH_API_KEY";
-const HADITH_BASE = "https://hadithapi.com/api";
-export const HADITH_BOOKS = [
-  { slug: "sahih-bukhari",  label: "Sahih Bukhari",       count: 7276 },
-  { slug: "sahih-muslim",   label: "Sahih Muslim",        count: 7564 },
-  { slug: "al-tirmidhi",    label: "Jami' Al-Tirmidhi",   count: 3956 },
-  { slug: "abu-dawood",     label: "Sunan Abu Dawood",    count: 5274 },
-  { slug: "ibn-e-majah",    label: "Sunan Ibn-e-Majah",   count: 4341 },
-  { slug: "sunan-nasai",    label: "Sunan An-Nasa'i",     count: 5762 },
-  { slug: "mishkat",        label: "Mishkat Al-Masabih",  count: 6294 },
-  { slug: "musnad-ahmad",   label: "Musnad Ahmad",        count: 4305 },
-  { slug: "al-silsila-sahiha", label: "Al-Silsila Sahiha", count: 4035 },
-];
-
-import type { HadithsResponse, ChaptersResponse } from "@/types";
-
-export async function fetchHadiths(params: {
-  book?: string;
-  chapter?: string;
-  hadithNumber?: string;
-  status?: string;
-  paginate?: number;
-  page?: number;
-}): Promise<HadithsResponse> {
-  const q = new URLSearchParams({ apiKey: HADITH_API_KEY });
-  if (params.book)         q.set("book", params.book);
-  if (params.chapter)      q.set("chapter", params.chapter);
-  if (params.hadithNumber) q.set("hadithNumber", params.hadithNumber);
-  if (params.status)       q.set("status", params.status);
-  if (params.paginate)     q.set("paginate", String(params.paginate));
-  if (params.page)         q.set("page", String(params.page));
-  const res = await fetch(`${HADITH_BASE}/hadiths?${q}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
-
-export async function fetchHadithChapters(bookSlug: string): Promise<ChaptersResponse> {
-  const res = await fetch(`${HADITH_BASE}/${bookSlug}/chapters?apiKey=${HADITH_API_KEY}`, { cache: "force-cache" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
-
-export async function fetchRandomHadith(): Promise<HadithsResponse> {
-  const book = HADITH_BOOKS[Math.floor(Math.random() * 3)]; // top 3 books
-  const randomNum = Math.floor(Math.random() * Math.min(book.count, 500)) + 1;
-  return fetchHadiths({ book: book.slug, hadithNumber: String(randomNum), paginate: 1 });
-}
+export const getLevelColor = (level: number): string => {
+  if (level >= 10) return "var(--gold-light)";
+  if (level >= 7)  return "var(--accent-hover)";
+  if (level >= 4)  return "var(--accent)";
+  return "var(--text-secondary)";
+};
