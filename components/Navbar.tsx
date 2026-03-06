@@ -8,8 +8,38 @@ import { useAuth } from "@/context/AuthContext";
 import { THEME_OPTIONS } from "@/lib/api";
 import type { Theme } from "@/types";
 
-// ── Nav icons ──────────────────────────────────────────────────────────────────
-const NavIcons: Record<string, React.ReactNode> = {
+// ── Theme SVG icons (one per theme value) ─────────────────────────────────────
+const ThemeIcons: Record<string, React.ReactNode> = {
+  // Deep Teal — sun with rays
+  dark: (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <circle cx="10" cy="10" r="3.2" />
+      <path strokeLinecap="round" d="M10 2v1.8M10 16.2V18M2 10h1.8M16.2 10H18M4.1 4.1l1.3 1.3M14.6 14.6l1.3 1.3M4.1 15.9l1.3-1.3M14.6 5.4l1.3-1.3" />
+    </svg>
+  ),
+  // Parchment — crescent moon
+  light: (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 13.5A7.5 7.5 0 0 1 6.5 3a7.5 7.5 0 1 0 10.5 10.5Z" />
+    </svg>
+  ),
+  // Warm Night — flame / candle
+  warm: (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 17c-3 0-5-2-5-4.5 0-2 1.5-3.5 2-5 .5 1.5 1 2 1.5 2C8 7 9 4.5 10 3c0 2.5 3 4 3 6.5 0 1-.4 1.9-1 2.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 17c1.5 0 2.5-1 2.5-2.5 0-1-.5-1.8-1-2.5-.3.8-.8 1.2-1.5 1.2S8.8 11.8 8.5 11c-.5.7-1 1.5-1 2.5C7.5 16 8.5 17 10 17Z" />
+    </svg>
+  ),
+  // Midnight Blue — star cluster
+  midnight: (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10 3l1.2 3.6H18l-3.1 2.3 1.2 3.6L13 10.2 10 17l-3-6.8-3.1 2.3 1.2-3.6L2 6.6h6.8L10 3Z" />
+    </svg>
+  ),
+};
+
+// ── Nav link icons ─────────────────────────────────────────────────────────────
+const NavIcons = {
   PrayerTimes: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V11.5C5 10.1 5.9 9 7 9h10c1.1 0 2 1.1 2 2.5V21" />
@@ -49,8 +79,24 @@ const NavIcons: Record<string, React.ReactNode> = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
     </svg>
   ),
+  SignIn: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+    </svg>
+  ),
+  Check: (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 8l4 4 7-7" />
+    </svg>
+  ),
+  Chevron: (
+    <svg viewBox="0 0 12 12" fill="currentColor" className="w-3 h-3">
+      <path d="M6 8L1 3h10L6 8z" />
+    </svg>
+  ),
 };
 
+// ── Nav links ──────────────────────────────────────────────────────────────────
 const BASE_NAV_LINKS = [
   { href: "/prayer-times",     label: "Prayer Times", icon: NavIcons.PrayerTimes },
   { href: "/fasting",          label: "Fasting",      icon: NavIcons.Fasting     },
@@ -60,6 +106,7 @@ const BASE_NAV_LINKS = [
   { href: "/learn/categories", label: "Learn",        icon: NavIcons.Learn       },
 ];
 
+// ── Component ──────────────────────────────────────────────────────────────────
 export default function Navbar() {
   const [scrolled, setScrolled]     = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -68,10 +115,11 @@ export default function Navbar() {
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
 
-  // Build nav links — append Profile only when logged in
   const navLinks = isAuthenticated
-    ? [...BASE_NAV_LINKS, { href: "/profile", label: "Profile", icon: NavIcons.Profile }]
+    ? [...BASE_NAV_LINKS, { href: "/profile", label: user?.username ?? "Profile", icon: NavIcons.Profile }]
     : BASE_NAV_LINKS;
+
+  const currentTheme = THEME_OPTIONS.find(t => t.value === theme);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -79,11 +127,14 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close dropdowns when navigating
+  // Close menus on route change
   useEffect(() => {
     setMobileOpen(false);
     setThemeOpen(false);
   }, [pathname]);
+
+  const isActive = (href: string) =>
+    pathname === href || (href !== "/" && pathname.startsWith(href));
 
   return (
     <header
@@ -95,7 +146,7 @@ export default function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-16 md:h-[4.5rem] flex items-center justify-between gap-4">
 
-        {/* Logo */}
+        {/* ── Logo ── */}
         <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
           <div className="w-9 h-9 rounded-full btn-gold flex items-center justify-center text-lg font-bold font-arabic">
             ن
@@ -105,11 +156,10 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop links */}
+        {/* ── Desktop links ── */}
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => {
-            const active = pathname === link.href || pathname.startsWith(link.href + "/");
-            const isProfile = link.href === "/profile";
+            const active = isActive(link.href);
             return (
               <Link
                 key={link.href}
@@ -117,75 +167,96 @@ export default function Navbar() {
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                   active
                     ? "text-[var(--gold-light)] bg-[var(--gold-muted)] border border-[var(--border-accent)]"
-                    : isProfile
-                    ? "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] border border-transparent hover:border-[var(--border)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                 }`}
               >
                 <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
                   {link.icon}
                 </span>
-                {isProfile && user ? user.username : link.label}
+                {link.label}
               </Link>
             );
           })}
         </div>
 
-        {/* Right side */}
+        {/* ── Right side ── */}
         <div className="flex items-center gap-2">
+
+          {/* Sign In — desktop, logged out only */}
+          {!isAuthenticated && (
+            <Link
+              href="/auth/login"
+              className="hidden md:flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium
+                         bg-[var(--gold-muted)] border border-[var(--border-accent)]
+                         text-[var(--gold-light)] hover:brightness-110 transition-all flex-shrink-0"
+            >
+              {NavIcons.SignIn}
+              Sign In
+            </Link>
+          )}
 
           {/* Theme picker */}
           <div className="relative">
             <button
               type="button"
-              onClick={() => setThemeOpen((o) => !o)}
+              onClick={() => setThemeOpen(o => !o)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm
                          bg-[var(--bg-elevated)] border border-[var(--border)]
                          text-[var(--text-secondary)] hover:text-[var(--text-primary)]
                          hover:border-[var(--border-accent)] transition-all"
             >
-              <span>{THEME_OPTIONS.find((t) => t.value === theme)?.icon ?? "🌿"}</span>
-              <span className="hidden sm:inline text-xs font-medium">
-                {THEME_OPTIONS.find((t) => t.value === theme)?.label ?? "Theme"}
+              <span className="text-[var(--text-secondary)]">
+                {ThemeIcons[theme] ?? ThemeIcons.dark}
               </span>
-              <svg
-                className={`w-3 h-3 transition-transform ${themeOpen ? "rotate-180" : ""}`}
-                viewBox="0 0 12 12"
-                fill="currentColor"
-              >
-                <path d="M6 8L1 3h10L6 8z" />
-              </svg>
+              <span className="hidden sm:inline text-xs font-medium">
+                {currentTheme?.label ?? "Theme"}
+              </span>
+              <span className={`transition-transform duration-200 ${themeOpen ? "rotate-180" : ""}`}>
+                {NavIcons.Chevron}
+              </span>
             </button>
 
+            {/* Dropdown */}
             <div
-              className={`absolute right-0 top-full mt-2 w-48 rounded-xl overflow-hidden
+              className={`absolute right-0 top-full mt-2 w-52 rounded-xl overflow-hidden
                           bg-[var(--bg-surface)] border border-[var(--border)] shadow-card z-[999]
                           transition-all duration-200 origin-top-right
-                          ${themeOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"}`}
+                          ${themeOpen
+                            ? "opacity-100 scale-100 pointer-events-auto"
+                            : "opacity-0 scale-95 pointer-events-none"}`}
             >
-              {THEME_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => { setTheme(opt.value as Theme); setThemeOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                    theme === opt.value
-                      ? "bg-[var(--gold-muted)] text-[var(--gold-light)] font-semibold"
-                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
-                  }`}
-                >
-                  <span className="text-base">{opt.icon}</span>
-                  <span>{opt.label}</span>
-                  {theme === opt.value && <span className="ml-auto text-[var(--gold)]">✓</span>}
-                </button>
-              ))}
+              {THEME_OPTIONS.map((opt) => {
+                const selected = theme === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => { setTheme(opt.value as Theme); setThemeOpen(false); }}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      selected
+                        ? "bg-[var(--gold-muted)] text-[var(--gold-light)] font-semibold"
+                        : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+                    }`}
+                  >
+                    <span className={selected ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
+                      {ThemeIcons[opt.value]}
+                    </span>
+                    <span>{opt.label}</span>
+                    {selected && (
+                      <span className="ml-auto text-[var(--gold)]">
+                        {NavIcons.Check}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Mobile hamburger */}
           <button
             type="button"
-            onClick={() => setMobileOpen((o) => !o)}
+            onClick={() => setMobileOpen(o => !o)}
             className="md:hidden w-10 h-10 flex flex-col justify-center items-center gap-1.5
                        rounded-xl hover:bg-[var(--bg-elevated)] transition-colors"
           >
@@ -205,16 +276,16 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu */}
+      {/* ── Mobile menu ── */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ${
-          mobileOpen ? "max-h-[36rem]" : "max-h-0"
+          mobileOpen ? "max-h-[40rem]" : "max-h-0"
         } bg-[var(--bg-overlay)] backdrop-blur-xl border-b border-[var(--border)]`}
       >
         <div className="px-4 py-3 flex flex-col gap-1">
+
           {navLinks.map((link) => {
-            const active = pathname === link.href || pathname.startsWith(link.href + "/");
-            const isProfile = link.href === "/profile";
+            const active = isActive(link.href);
             return (
               <Link
                 key={link.href}
@@ -229,32 +300,54 @@ export default function Navbar() {
                 <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
                   {link.icon}
                 </span>
-                {isProfile && user ? user.username : link.label}
+                {link.label}
               </Link>
             );
           })}
 
+          {/* Sign In — mobile, logged out only */}
+          {!isAuthenticated && (
+            <Link
+              href="/auth/login"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium mt-1
+                         bg-[var(--gold-muted)] border border-[var(--border-accent)]
+                         text-[var(--gold-light)] transition-all"
+            >
+              {NavIcons.SignIn}
+              Sign In
+            </Link>
+          )}
+
           {/* Theme switcher */}
           <div className="mt-2 pt-2 border-t border-[var(--border)]">
-            <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider px-4 mb-2">Theme</p>
+            <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider px-4 mb-2">
+              Theme
+            </p>
             <div className="grid grid-cols-2 gap-2 px-1">
-              {THEME_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => { setTheme(opt.value as Theme); setMobileOpen(false); }}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm transition-all ${
-                    theme === opt.value
-                      ? "bg-[var(--gold-muted)] text-[var(--gold-light)] border border-[var(--border-accent)] font-semibold"
-                      : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border)]"
-                  }`}
-                >
-                  <span>{opt.icon}</span>
-                  <span className="text-xs">{opt.label}</span>
-                </button>
-              ))}
+              {THEME_OPTIONS.map((opt) => {
+                const selected = theme === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => { setTheme(opt.value as Theme); setMobileOpen(false); }}
+                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all ${
+                      selected
+                        ? "bg-[var(--gold-muted)] text-[var(--gold-light)] border border-[var(--border-accent)] font-semibold"
+                        : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] border border-[var(--border)]"
+                    }`}
+                  >
+                    <span className={selected ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
+                      {ThemeIcons[opt.value]}
+                    </span>
+                    <span className="text-xs">{opt.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
+
         </div>
       </div>
     </header>
