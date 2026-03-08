@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { ApiCategory, fetchCategories, getCategoryMeta } from "@/lib/Categories";
-import { hasCompletedQuiz, isChapterUnlocked } from "@/lib/ChapterLocks";
 import { useAuth } from "@/context/AuthContext";
 
 interface Chapter {
@@ -14,6 +13,8 @@ interface Chapter {
   order: number;
   estimatedReadingTime?: number;
   era?: string;
+  isLocked: boolean;
+  isCompleted: boolean;
 }
 
 export default function CategoryPage() {
@@ -24,34 +25,48 @@ export default function CategoryPage() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [, forceUpdate] = useState(0);
 
+const load = useCallback(async () => {
+  setLoading(true);
+  try {
+    const [cats, chapRes, progressRes] = await Promise.all([
+      fetchCategories(),
+      api.get(`/chapters/category/${slug}`),
+      api.get("/progress"),
+    ]);
+
+    const found = cats.find((c) => c.slug === slug) ?? null;
+    setCategory(found);
+
+    // Build a Set of completed chapter IDs from the user's progress
+    const completedIds = new Set<string>(
+      (progressRes.data.progress.completedChapters ?? []).map((c: any) => c._id ?? c)
+    );
+
+    // Map chapters and derive isCompleted + isLocked
+    const rawChapters = (chapRes.data.chapters ?? []) as Omit<Chapter, "isCompleted" | "isLocked">[];
+    const enriched: Chapter[] = rawChapters
+      .sort((a, b) => a.order - b.order)
+      .map((ch, i, arr) => {
+        const isCompleted = completedIds.has(ch._id);
+        // First chapter is always unlocked; subsequent ones require previous to be completed
+        const isLocked = i === 0 ? false : !completedIds.has(arr[i - 1]._id);
+        return { ...ch, isCompleted, isLocked };
+      });
+
+    setChapters(enriched);
+  } finally {
+    setLoading(false);
+  }
+}, [slug]);
+
+  // Re-fetch when slug or user changes (user changes after completing a chapter)
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const [cats, chapRes] = await Promise.all([
-          fetchCategories(),
-          api.get(`/chapters/category/${slug}`),
-        ]);
-        const found = cats.find(c => c.slug === slug) ?? null;
-        setCategory(found);
-        setChapters((chapRes.data.chapters ?? []) as Chapter[]);
-      } finally {
-        setLoading(false);
-      }
-    }
     void load();
-  }, [slug]);
+  }, [load, user]);
 
-  useEffect(() => {
-    const onFocus = () => forceUpdate(n => n + 1);
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, []);
-
-  const handleClick = (ch: Chapter, index: number) => {
-    if (!isChapterUnlocked(chapters, index,user?.id ?? "")) return;
+  const handleClick = (ch: Chapter) => {
+    if (ch.isLocked) return;
     router.push(`/learn/chapters/${ch._id}`);
   };
 
@@ -59,8 +74,11 @@ export default function CategoryPage() {
     ? getCategoryMeta(category)
     : { label: slug, icon: "📚", color: "var(--gold)" };
 
-  const completedCount = chapters.filter(ch => hasCompletedQuiz(ch._id, user?.id ?? "")).length;
-  const pct = chapters.length > 0 ? Math.round((completedCount / chapters.length) * 100) : 0;
+  const completedCount = chapters.filter((ch) => ch.isCompleted).length;
+  const pct =
+    chapters.length > 0
+      ? Math.round((completedCount / chapters.length) * 100)
+      : 0;
 
   return (
     <div
@@ -77,7 +95,6 @@ export default function CategoryPage() {
           overflow-x: hidden;
         }
 
-        /* ── Geometric Islamic pattern background ── */
         .category-root::before {
           content: '';
           position: fixed;
@@ -136,7 +153,6 @@ export default function CategoryPage() {
           50%       { transform: translateY(-6px) rotate(2deg); }
         }
 
-        /* Plain title — no gradient glow, just clean Amiri with letter-spacing */
         .cat-title {
           font-family: 'Amiri', serif;
           font-size: clamp(2rem, 6vw, 3rem);
@@ -260,7 +276,6 @@ export default function CategoryPage() {
           margin-bottom: 0;
         }
 
-        /* Left accent stripe — hidden by default */
         .chapter-card::before {
           content: '';
           position: absolute;
@@ -401,7 +416,7 @@ export default function CategoryPage() {
           align-items: center;
           justify-content: center;
           height: 18px;
-          margin: 0 0 0 calc(1.5rem + 21px); /* aligns with badge center */
+          margin: 0 0 0 calc(1.5rem + 21px);
         }
         .connector-line {
           width: 2px;
@@ -446,7 +461,6 @@ export default function CategoryPage() {
           100% { background-position:  400px 0; }
         }
 
-        /* ── Fade-in animation for cards ── */
         .card-wrapper {
           animation: fadeUp 0.35s ease both;
         }
@@ -479,12 +493,7 @@ export default function CategoryPage() {
 
       {/* ── Hero ── */}
       <div className="cat-hero">
-        {/* Ambient background glow (behind content, not on text) */}
-        <div
-          className="cat-hero-glow"
-          style={{ background: meta.color }}
-        />
-
+        <div className="cat-hero-glow" style={{ background: meta.color }} />
         <div className="cat-hero-icon">{meta.icon}</div>
 
         <h1 className="cat-title">
@@ -532,7 +541,11 @@ export default function CategoryPage() {
         {loading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="shimmer-card" style={{ animationDelay: `${i * 0.08}s` }} />
+              <div
+                key={i}
+                className="shimmer-card"
+                style={{ animationDelay: `${i * 0.08}s` }}
+              />
             ))}
           </div>
         ) : chapters.length === 0 ? (
@@ -546,10 +559,8 @@ export default function CategoryPage() {
         ) : (
           <>
             {chapters.map((ch, i) => {
-              const completed = hasCompletedQuiz(ch._id, user?.id ?? "");
-              const unlocked = isChapterUnlocked(chapters, i, user?.id ?? "");
-
-              // and completedCount
+              const completed = ch.isCompleted;   // ← from backend
+              const unlocked = !ch.isLocked;      // ← from backend
 
               const cardClass = !unlocked ? "locked" : completed ? "completed" : "unlocked";
               const badgeClass = !unlocked ? "badge-locked" : completed ? "badge-completed" : "badge-unlocked";
@@ -560,7 +571,6 @@ export default function CategoryPage() {
                   className="card-wrapper"
                   style={{ animationDelay: `${i * 0.06}s` }}
                 >
-                  {/* Connector line between cards */}
                   {i > 0 && (
                     <div className="card-connector">
                       <div className={`connector-line${unlocked ? "" : " faded"}`} />
@@ -569,10 +579,10 @@ export default function CategoryPage() {
 
                   <div
                     className={`chapter-card ${cardClass}`}
-                    onClick={() => handleClick(ch, i)}
+                    onClick={() => handleClick(ch)}
                     role={unlocked ? "button" : undefined}
                     tabIndex={unlocked ? 0 : undefined}
-                    onKeyDown={e => e.key === "Enter" && handleClick(ch, i)}
+                    onKeyDown={(e) => e.key === "Enter" && handleClick(ch)}
                     onMouseEnter={() => setHoveredIndex(i)}
                     onMouseLeave={() => setHoveredIndex(null)}
                   >
@@ -591,7 +601,6 @@ export default function CategoryPage() {
                           {ch.title}
                         </h3>
 
-                        {/* Status chip */}
                         <div>
                           {completed && <span className="chip chip-done">✓ Done</span>}
                           {!completed && !unlocked && <span className="chip chip-locked">🔒 Locked</span>}
@@ -605,18 +614,18 @@ export default function CategoryPage() {
 
                       <div className="chapter-meta">
                         {ch.era && <span>🕰 {ch.era}</span>}
-                        {ch.estimatedReadingTime && <span>⏱ {ch.estimatedReadingTime} min read</span>}
+                        {ch.estimatedReadingTime && (
+                          <span>⏱ {ch.estimatedReadingTime} min read</span>
+                        )}
                       </div>
                     </div>
 
-                    {/* Animated chevron on hover */}
                     {unlocked && !completed && <span className="chevron">›</span>}
                   </div>
                 </div>
               );
             })}
 
-            {/* Legend */}
             <div className="legend">
               <div className="legend-item">✓ Complete the quiz to unlock the next chapter</div>
               <div className="legend-item">🔒 Finish the previous chapter first</div>

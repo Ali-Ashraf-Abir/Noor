@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
@@ -8,29 +8,25 @@ import { useAuth } from "@/context/AuthContext";
 import { THEME_OPTIONS } from "@/lib/api";
 import type { Theme } from "@/types";
 
-// ── Theme SVG icons (one per theme value) ─────────────────────────────────────
+// ── Theme icons ────────────────────────────────────────────────────────────────
 const ThemeIcons: Record<string, React.ReactNode> = {
-  // Deep Teal — sun with rays
   dark: (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
       <circle cx="10" cy="10" r="3.2" />
       <path strokeLinecap="round" d="M10 2v1.8M10 16.2V18M2 10h1.8M16.2 10H18M4.1 4.1l1.3 1.3M14.6 14.6l1.3 1.3M4.1 15.9l1.3-1.3M14.6 5.4l1.3-1.3" />
     </svg>
   ),
-  // Parchment — crescent moon
   light: (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" d="M17 13.5A7.5 7.5 0 0 1 6.5 3a7.5 7.5 0 1 0 10.5 10.5Z" />
     </svg>
   ),
-  // Warm Night — flame / candle
   warm: (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" d="M10 17c-3 0-5-2-5-4.5 0-2 1.5-3.5 2-5 .5 1.5 1 2 1.5 2C8 7 9 4.5 10 3c0 2.5 3 4 3 6.5 0 1-.4 1.9-1 2.5" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M10 17c1.5 0 2.5-1 2.5-2.5 0-1-.5-1.8-1-2.5-.3.8-.8 1.2-1.5 1.2S8.8 11.8 8.5 11c-.5.7-1 1.5-1 2.5C7.5 16 8.5 17 10 17Z" />
     </svg>
   ),
-  // Midnight Blue — star cluster
   midnight: (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" d="M10 3l1.2 3.6H18l-3.1 2.3 1.2 3.6L13 10.2 10 17l-3-6.8-3.1 2.3 1.2-3.6L2 6.6h6.8L10 3Z" />
@@ -38,8 +34,8 @@ const ThemeIcons: Record<string, React.ReactNode> = {
   ),
 };
 
-// ── Nav link icons ─────────────────────────────────────────────────────────────
-const NavIcons = {
+// ── All nav icons ──────────────────────────────────────────────────────────────
+const I = {
   PrayerTimes: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V11.5C5 10.1 5.9 9 7 9h10c1.1 0 2 1.1 2 2.5V21" />
@@ -74,6 +70,19 @@ const NavIcons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
     </svg>
   ),
+  Salah: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  ),
+  Tasbih: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+      <circle cx="12" cy="5" r="2"/><circle cx="19" cy="9" r="2"/>
+      <circle cx="19" cy="15" r="2"/><circle cx="12" cy="19" r="2"/>
+      <circle cx="5" cy="15" r="2"/><circle cx="5" cy="9" r="2"/>
+      <path strokeLinecap="round" d="M12 7v2.5M17.2 10.5l-2 1.3M17.2 13.5l-2-1.3M12 17v-2.5M6.8 13.5l2-1.3M6.8 10.5l2 1.3"/>
+    </svg>
+  ),
   Profile: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
@@ -94,32 +103,162 @@ const NavIcons = {
       <path d="M6 8L1 3h10L6 8z" />
     </svg>
   ),
+  ChevronRight: (
+    <svg viewBox="0 0 12 12" fill="currentColor" className="w-2.5 h-2.5">
+      <path d="M4 2l4 4-4 4V2z" />
+    </svg>
+  ),
 };
 
-// ── Nav links ──────────────────────────────────────────────────────────────────
-const BASE_NAV_LINKS = [
-  { href: "/prayer-times",     label: "Prayer Times", icon: NavIcons.PrayerTimes },
-  { href: "/fasting",          label: "Fasting",      icon: NavIcons.Fasting     },
-  { href: "/asma-ul-husna",    label: "99 Names",     icon: NavIcons.Names       },
-  { href: "/hadith",           label: "Hadith",       icon: NavIcons.Hadith      },
-  { href: "/quran",            label: "Quran",        icon: NavIcons.Quran       },
-  { href: "/learn/categories", label: "Learn",        icon: NavIcons.Learn       },
+// ── Nav groups ─────────────────────────────────────────────────────────────────
+// Each top-level item is either a direct link or a dropdown group
+interface NavLink  { href: string; label: string; icon: React.ReactNode; desc?: string }
+interface NavGroup { label: string; icon: React.ReactNode; items: NavLink[] }
+type NavItem = ({ kind: "link" } & NavLink) | ({ kind: "group" } & NavGroup);
+
+const NAV_ITEMS: NavItem[] = [
+  // ── Quran & Hadith ────────────────────────────────────────────────────────
+  {
+    kind: "group",
+    label: "Books",
+    icon: I.Quran,
+    items: [
+      { href: "/quran",  label: "Quran",  icon: I.Quran,  desc: "Full Quran with translation" },
+      { href: "/hadith", label: "Hadith", icon: I.Hadith, desc: "Sahih collections & search"  },
+    ],
+  },
+  // ── Prayer tools ──────────────────────────────────────────────────────────
+  {
+    kind: "group",
+    label: "Prayer",
+    icon: I.PrayerTimes,
+    items: [
+      { href: "/prayer-times",            label: "Prayer Times", icon: I.PrayerTimes, desc: "Daily times & Qibla"    },
+      { href: "/fasting",                 label: "Fasting",      icon: I.Fasting,     desc: "Suhoor & Iftar times"  },
+      { href: "/ibadah/salahtracker",     label: "Salah Tracker",icon: I.Salah,       desc: "Track your 5 prayers" },
+      { href: "/ibadah/tasbihcounter",    label: "Tasbih",       icon: I.Tasbih,      desc: "Dhikr counter"        },
+    ],
+  },
+  // ── Knowledge ─────────────────────────────────────────────────────────────
+  {
+    kind: "group",
+    label: "Learn",
+    icon: I.Learn,
+    items: [
+      { href: "/learn/categories", label: "Seerah & History", icon: I.Learn, desc: "Chapters, quizzes & XP" },
+      { href: "/asma-ul-husna",    label: "99 Names",         icon: I.Names, desc: "Asma ul Husna"          },
+    ],
+  },
 ];
 
-// ── Component ──────────────────────────────────────────────────────────────────
+// ── Dropdown component ────────────────────────────────────────────────────────
+function NavDropdown({
+  group,
+  isActive,
+}: {
+  group: NavGroup;
+  isActive: (href: string) => boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const groupActive = group.items.some(i => isActive(i.href));
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+          groupActive
+            ? "text-[var(--gold-light)] bg-[var(--gold-muted)] border border-[var(--border-accent)]"
+            : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+        }`}
+      >
+        <span className={groupActive ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
+          {group.icon}
+        </span>
+        {group.label}
+        <span className={`transition-transform duration-200 ml-0.5 ${open ? "rotate-180" : ""}`}>
+          {I.Chevron}
+        </span>
+      </button>
+
+      {/* Dropdown panel */}
+      <div
+        className={`absolute left-0 top-full mt-2 min-w-[220px] rounded-xl overflow-hidden
+                    bg-[var(--bg-surface)] border border-[var(--border)] shadow-card z-[999]
+                    transition-all duration-200 origin-top-left
+                    ${open ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"}`}
+      >
+        {/* Group label header */}
+        <div className="px-3 pt-2.5 pb-1.5 border-b border-[var(--border)]">
+          <p className="text-[0.65rem] uppercase tracking-[0.18em] text-[var(--text-muted)] font-medium">
+            {group.label}
+          </p>
+        </div>
+
+        <div className="p-1.5 flex flex-col gap-0.5">
+          {group.items.map(item => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={`flex items-start gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group ${
+                  active
+                    ? "bg-[var(--gold-muted)] text-[var(--gold-light)]"
+                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                <span className={`mt-0.5 flex-shrink-0 ${active ? "text-[var(--gold)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-secondary)]"}`}>
+                  {item.icon}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium leading-tight">{item.label}</div>
+                  {item.desc && (
+                    <div className="text-[0.72rem] text-[var(--text-muted)] mt-0.5 leading-tight">
+                      {item.desc}
+                    </div>
+                  )}
+                </div>
+                {active && (
+                  <span className="ml-auto text-[var(--gold)] flex-shrink-0 mt-0.5">{I.Check}</span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Navbar ────────────────────────────────────────────────────────────────
 export default function Navbar() {
   const [scrolled, setScrolled]     = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [themeOpen, setThemeOpen]   = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
+  const themeRef = useRef<HTMLDivElement>(null);
+
   const { theme, setTheme } = useTheme();
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
 
-  const navLinks = isAuthenticated
-    ? [...BASE_NAV_LINKS, { href: "/profile", label: user?.username ?? "Profile", icon: NavIcons.Profile }]
-    : BASE_NAV_LINKS;
-
   const currentTheme = THEME_OPTIONS.find(t => t.value === theme);
+
+  const isActive = (href: string) =>
+    pathname === href || (href !== "/" && pathname.startsWith(href));
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -127,14 +266,21 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close menus on route change
+  // Close everything on route change
   useEffect(() => {
     setMobileOpen(false);
     setThemeOpen(false);
+    setMobileExpanded(null);
   }, [pathname]);
 
-  const isActive = (href: string) =>
-    pathname === href || (href !== "/" && pathname.startsWith(href));
+  // Close theme dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (themeRef.current && !themeRef.current.contains(e.target as Node)) setThemeOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   return (
     <header
@@ -156,33 +302,51 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* ── Desktop links ── */}
+        {/* ── Desktop nav ── */}
         <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => {
-            const active = isActive(link.href);
-            return (
+          {NAV_ITEMS.map(item =>
+            item.kind === "link" ? (
               <Link
-                key={link.href}
-                href={link.href}
+                key={item.href}
+                href={item.href}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  active
+                  isActive(item.href)
                     ? "text-[var(--gold-light)] bg-[var(--gold-muted)] border border-[var(--border-accent)]"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                 }`}
               >
-                <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
-                  {link.icon}
+                <span className={isActive(item.href) ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
+                  {item.icon}
                 </span>
-                {link.label}
+                {item.label}
               </Link>
-            );
-          })}
+            ) : (
+              <NavDropdown key={item.label} group={item} isActive={isActive} />
+            )
+          )}
+
+          {/* Profile — only when logged in */}
+          {isAuthenticated && (
+            <Link
+              href="/profile"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isActive("/profile")
+                  ? "text-[var(--gold-light)] bg-[var(--gold-muted)] border border-[var(--border-accent)]"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+              }`}
+            >
+              <span className={isActive("/profile") ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
+                {I.Profile}
+              </span>
+              {user?.username ?? "Profile"}
+            </Link>
+          )}
         </div>
 
-        {/* ── Right side ── */}
+        {/* ── Right controls ── */}
         <div className="flex items-center gap-2">
 
-          {/* Sign In — desktop, logged out only */}
+          {/* Sign In — desktop */}
           {!isAuthenticated && (
             <Link
               href="/auth/login"
@@ -190,13 +354,13 @@ export default function Navbar() {
                          bg-[var(--gold-muted)] border border-[var(--border-accent)]
                          text-[var(--gold-light)] hover:brightness-110 transition-all flex-shrink-0"
             >
-              {NavIcons.SignIn}
+              {I.SignIn}
               Sign In
             </Link>
           )}
 
           {/* Theme picker */}
-          <div className="relative">
+          <div className="relative" ref={themeRef}>
             <button
               type="button"
               onClick={() => setThemeOpen(o => !o)}
@@ -212,11 +376,10 @@ export default function Navbar() {
                 {currentTheme?.label ?? "Theme"}
               </span>
               <span className={`transition-transform duration-200 ${themeOpen ? "rotate-180" : ""}`}>
-                {NavIcons.Chevron}
+                {I.Chevron}
               </span>
             </button>
 
-            {/* Dropdown */}
             <div
               className={`absolute right-0 top-full mt-2 w-52 rounded-xl overflow-hidden
                           bg-[var(--bg-surface)] border border-[var(--border)] shadow-card z-[999]
@@ -225,31 +388,36 @@ export default function Navbar() {
                             ? "opacity-100 scale-100 pointer-events-auto"
                             : "opacity-0 scale-95 pointer-events-none"}`}
             >
-              {THEME_OPTIONS.map((opt) => {
-                const selected = theme === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => { setTheme(opt.value as Theme); setThemeOpen(false); }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      selected
-                        ? "bg-[var(--gold-muted)] text-[var(--gold-light)] font-semibold"
-                        : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
-                    }`}
-                  >
-                    <span className={selected ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
-                      {ThemeIcons[opt.value]}
-                    </span>
-                    <span>{opt.label}</span>
-                    {selected && (
-                      <span className="ml-auto text-[var(--gold)]">
-                        {NavIcons.Check}
+              <div className="px-3 pt-2.5 pb-1.5 border-b border-[var(--border)]">
+                <p className="text-[0.65rem] uppercase tracking-[0.18em] text-[var(--text-muted)] font-medium">
+                  Appearance
+                </p>
+              </div>
+              <div className="p-1.5 flex flex-col gap-0.5">
+                {THEME_OPTIONS.map((opt) => {
+                  const selected = theme === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => { setTheme(opt.value as Theme); setThemeOpen(false); }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                        selected
+                          ? "bg-[var(--gold-muted)] text-[var(--gold-light)] font-semibold"
+                          : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+                      }`}
+                    >
+                      <span className={selected ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
+                        {ThemeIcons[opt.value]}
                       </span>
-                    )}
-                  </button>
-                );
-              })}
+                      <span>{opt.label}</span>
+                      {selected && (
+                        <span className="ml-auto text-[var(--gold)]">{I.Check}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -279,33 +447,106 @@ export default function Navbar() {
       {/* ── Mobile menu ── */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ${
-          mobileOpen ? "max-h-[40rem]" : "max-h-0"
+          mobileOpen ? "max-h-[48rem]" : "max-h-0"
         } bg-[var(--bg-overlay)] backdrop-blur-xl border-b border-[var(--border)]`}
       >
-        <div className="px-4 py-3 flex flex-col gap-1">
+        <div className="px-4 py-3 flex flex-col gap-0.5">
 
-          {navLinks.map((link) => {
-            const active = isActive(link.href);
+          {NAV_ITEMS.map(item => {
+            if (item.kind === "link") {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                    active
+                      ? "bg-[var(--gold-muted)] text-[var(--gold-light)] border border-[var(--border-accent)]"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>{item.icon}</span>
+                  {item.label}
+                </Link>
+              );
+            }
+
+            // Group — collapsible accordion on mobile
+            const groupActive = item.items.some(i => isActive(i.href));
+            const expanded    = mobileExpanded === item.label;
+
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                  active
-                    ? "bg-[var(--gold-muted)] text-[var(--gold-light)] border border-[var(--border-accent)]"
-                    : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
-                }`}
-              >
-                <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>
-                  {link.icon}
-                </span>
-                {link.label}
-              </Link>
+              <div key={item.label}>
+                <button
+                  type="button"
+                  onClick={() => setMobileExpanded(expanded ? null : item.label)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                    groupActive
+                      ? "bg-[var(--gold-muted)] text-[var(--gold-light)] border border-[var(--border-accent)]"
+                      : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  <span className={groupActive ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>{item.icon}</span>
+                  <span className="flex-1 text-left">{item.label}</span>
+                  <span className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}>
+                    {I.Chevron}
+                  </span>
+                </button>
+
+                {/* Accordion children */}
+                <div
+                  className={`overflow-hidden transition-all duration-250 ${
+                    expanded ? "max-h-96" : "max-h-0"
+                  }`}
+                >
+                  <div className="ml-4 mt-0.5 flex flex-col gap-0.5 pl-3 border-l border-[var(--border)]">
+                    {item.items.map(child => {
+                      const active = isActive(child.href);
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={() => { setMobileOpen(false); setMobileExpanded(null); }}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                            active
+                              ? "bg-[var(--gold-muted)] text-[var(--gold-light)]"
+                              : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+                          }`}
+                        >
+                          <span className={active ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>{child.icon}</span>
+                          <div>
+                            <div className="font-medium">{child.label}</div>
+                            {child.desc && (
+                              <div className="text-[0.7rem] text-[var(--text-muted)] mt-0.5">{child.desc}</div>
+                            )}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             );
           })}
 
-          {/* Sign In — mobile, logged out only */}
+          {/* Profile */}
+          {isAuthenticated && (
+            <Link
+              href="/profile"
+              onClick={() => setMobileOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                isActive("/profile")
+                  ? "bg-[var(--gold-muted)] text-[var(--gold-light)] border border-[var(--border-accent)]"
+                  : "text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+              }`}
+            >
+              <span className={isActive("/profile") ? "text-[var(--gold)]" : "text-[var(--text-muted)]"}>{I.Profile}</span>
+              {user?.username ?? "Profile"}
+            </Link>
+          )}
+
+          {/* Sign In — mobile */}
           {!isAuthenticated && (
             <Link
               href="/auth/login"
@@ -314,15 +555,15 @@ export default function Navbar() {
                          bg-[var(--gold-muted)] border border-[var(--border-accent)]
                          text-[var(--gold-light)] transition-all"
             >
-              {NavIcons.SignIn}
+              {I.SignIn}
               Sign In
             </Link>
           )}
 
-          {/* Theme switcher */}
+          {/* Theme — mobile */}
           <div className="mt-2 pt-2 border-t border-[var(--border)]">
             <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider px-4 mb-2">
-              Theme
+              Appearance
             </p>
             <div className="grid grid-cols-2 gap-2 px-1">
               {THEME_OPTIONS.map((opt) => {

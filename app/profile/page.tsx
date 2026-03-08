@@ -69,13 +69,36 @@ export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<FullUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    api.get("/auth/me")
-      .then(r => setUser(r.data.user))
-      .catch(() => router.push("/auth/login"))
+    api.get("/progress")
+      .then(r => {
+        const p = r.data.progress;
+        setUser({
+          id:               String(p.id),
+          username:         p.username,
+          email:            p.email,
+          isAdmin:          p.isAdmin ?? false,
+          createdAt:        p.createdAt,
+          xp:               p.xp,
+          level:            p.level,
+          levelTitle:       p.levelTitle,
+          streak:           p.streak,
+          completedChapters: p.completedChapters ?? [],
+          quizScores:       p.quizScores ?? [],
+        });
+      })
+      .catch(err => {
+        const status = err?.response?.status;
+        if (status === 401) {
+          router.push("/auth/login");
+        } else {
+          setError("Failed to load profile. Please try again.");
+        }
+      })
       .finally(() => {
         setLoading(false);
         requestAnimationFrame(() => setMounted(true));
@@ -83,9 +106,10 @@ export default function ProfilePage() {
   }, [router]);
 
   if (loading) return <LoadingScreen />;
-  if (!user) return null;
+  if (error)   return <ErrorScreen message={error} />;
+  if (!user)   return null;
 
-  const lc = getLevelColor(user.level);
+  const lc       = getLevelColor(user.level);
   const xpInLevel = user.xp % XP_PER_LEVEL;
   const levelPct  = Math.round((xpInLevel / XP_PER_LEVEL) * 100);
   const avgScore  = user.quizScores.length
@@ -93,7 +117,7 @@ export default function ProfilePage() {
     : 0;
 
   return (
-    <div className="pr" style={{ "--lc": lc } as any}>
+    <div className="pr" style={{ "--lc": lc } as React.CSSProperties}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,600;0,700;1,400&family=Cormorant+SC:wght@300;400;500;600&display=swap');
 
@@ -180,7 +204,6 @@ export default function ProfilePage() {
           background: radial-gradient(circle, color-mix(in srgb, var(--lc) 15%, transparent), transparent 70%);
           pointer-events: none;
         }
-
         .hero-row {
           display: flex; align-items: flex-start; gap: 1.75rem; flex-wrap: wrap;
         }
@@ -310,7 +333,7 @@ export default function ProfilePage() {
           padding: 0.72rem 0.5rem; border-radius: 9px;
           background: none; border: none; cursor: pointer;
           font-family: 'Cormorant SC', serif;
-          font-size: 1.07rem; letter-spacing: 0.14em;
+          font-size: 0.8rem; letter-spacing: 0.14em;
           color: var(--text-muted); transition: all 0.2s;
         }
         .tab-btn.active {
@@ -433,6 +456,21 @@ export default function ProfilePage() {
           letter-spacing: 0.14em; color: var(--text-muted); text-align: center;
         }
 
+        /* Error */
+        .err-screen {
+          min-height: 100vh; background: var(--bg-base);
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 0.75rem;
+        }
+        .err-title {
+          font-family: 'Cormorant SC', serif; font-size: 1.2rem;
+          letter-spacing: 0.2em; color: #e07070;
+        }
+        .err-sub {
+          font-family: 'EB Garamond', serif; font-style: italic;
+          font-size: 1.1rem; color: var(--text-muted);
+        }
+
         /* Empty */
         .empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
         .empty-ico {
@@ -516,12 +554,12 @@ export default function ProfilePage() {
         {/* Stats */}
         <div className={`stats-grid ${mounted ? "in" : ""}`}>
           {[
-            { icon: <Zap size={14} strokeWidth={1.5} />,         val: user.xp.toLocaleString(), lbl: "Total XP",      color: "#c9a84c" },
-            { icon: <Flame size={14} strokeWidth={1.5} />,        val: user.streak,               lbl: "Day Streak",   color: "#d4845a" },
-            { icon: <BookOpen size={14} strokeWidth={1.5} />,     val: user.completedChapters.length, lbl: "Chapters", color: "#4db8a8" },
-            { icon: <CheckCircle size={14} strokeWidth={1.5} />,  val: user.quizScores.length,    lbl: "Quizzes Done", color: "#b07fd4" },
+            { icon: <Zap size={14} strokeWidth={1.5} />,        val: user.xp.toLocaleString(),          lbl: "Total XP",      color: "#c9a84c" },
+            { icon: <Flame size={14} strokeWidth={1.5} />,       val: user.streak,                       lbl: "Day Streak",    color: "#d4845a" },
+            { icon: <BookOpen size={14} strokeWidth={1.5} />,    val: user.completedChapters.length,     lbl: "Chapters",      color: "#4db8a8" },
+            { icon: <CheckCircle size={14} strokeWidth={1.5} />, val: user.quizScores.length,            lbl: "Quizzes Done",  color: "#b07fd4" },
           ].map(({ icon, val, lbl, color }) => (
-            <div key={lbl} className="stat-card" style={{ "--sc": color } as any}>
+            <div key={lbl} className="stat-card" style={{ "--sc": color } as React.CSSProperties}>
               <div className="stat-ico" style={{ color }}>{icon}</div>
               <div className="stat-val">{val}</div>
               <div className="stat-lbl">{lbl}</div>
@@ -551,6 +589,7 @@ export default function ProfilePage() {
         <TabPanel show={tab === "quizzes"}>
           <QuizzesTab scores={user.quizScores} lc={lc} />
         </TabPanel>
+
       </div>
     </div>
   );
@@ -579,8 +618,8 @@ function OverviewTab({ user, avgScore, lc }: { user: FullUser; avgScore: number;
   const catCounts: Record<string, number> = {};
   user.completedChapters.forEach(c => { catCounts[c.category] = (catCounts[c.category] || 0) + 1; });
   const maxCat = Math.max(1, ...Object.values(catCounts));
-  const cats = Object.entries(CATEGORY_META).filter(([k]) => catCounts[k] > 0);
-  const C = 2 * Math.PI * 38;
+  const cats   = Object.entries(CATEGORY_META).filter(([k]) => catCounts[k] > 0);
+  const C    = 2 * Math.PI * 38;
   const dash = (avgScore / 100) * C;
 
   return (
@@ -632,8 +671,8 @@ function OverviewTab({ user, avgScore, lc }: { user: FullUser; avgScore: number;
           </div>
           {[...user.quizScores]
             .sort((a,b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
-            .slice(0,5)
-            .map((q,i) => {
+            .slice(0, 5)
+            .map((q, i) => {
               const title = typeof q.chapterId === "object" ? q.chapterId.title : "Chapter";
               return (
                 <div key={i} className="qz-row">
@@ -712,14 +751,14 @@ function QuizzesTab({ scores, lc }: { scores: QuizScore[]; lc: string }) {
       </div>
       {[...scores]
         .sort((a,b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
-        .map((q,i) => {
+        .map((q, i) => {
           const title = typeof q.chapterId === "object" ? q.chapterId.title : "Chapter";
           const c = q.percentage >= 80 ? "#4ecd82" : q.percentage >= 50 ? "#c9a84c" : "#e07070";
           return (
             <div key={i} className="qz-row">
               <div className="qz-title">{title}</div>
               <div className="qz-score" style={{ color: c }}>{q.percentage}%</div>
-              <div className="qz-xp" style={{ "--lc": lc } as any}>+{q.xpEarned} XP</div>
+              <div className="qz-xp" style={{ "--lc": lc } as React.CSSProperties}>+{q.xpEarned} XP</div>
               <div className="qz-date">
                 <Clock size={10} strokeWidth={1.5} />
                 {new Date(q.completedAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"2-digit"})}
@@ -737,6 +776,16 @@ function LoadingScreen() {
     <div style={{ minHeight:"100vh", background:"var(--bg-base)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
       <div className="load-ico"><User size={40} strokeWidth={1} color="var(--text-muted)" /></div>
       <div className="load-lbl">Loading Profile</div>
+    </div>
+  );
+}
+
+/* ── Error ── */
+function ErrorScreen({ message }: { message: string }) {
+  return (
+    <div className="err-screen">
+      <div className="err-title">Something went wrong</div>
+      <div className="err-sub">{message}</div>
     </div>
   );
 }

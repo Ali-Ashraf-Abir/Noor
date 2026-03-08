@@ -28,8 +28,13 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      Cookies.remove("token");
-      if (typeof window !== "undefined") window.location.href = "/auth/login";
+      const authRoutes = ["/auth/login", "/auth/register", "/auth/forgot-password"];
+      const isAuthRoute = authRoutes.some(route => window.location.pathname.startsWith(route));
+
+      if (!isAuthRoute) {
+        Cookies.remove("token");
+        if (typeof window !== "undefined") window.location.href = "/auth/login";
+      }
     }
     return Promise.reject(err);
   }

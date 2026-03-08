@@ -12,11 +12,12 @@ import type { PrayerTimesData, Coords } from "@/types";
 import LocationButton from "@/components/LocationButton";
 import ErrorBanner from "@/components/ErrorBanner";
 import CountdownTimer from "@/components/CountDownTimer";
+import QiblaCompass from "@/components/QiblaCompass";
 
 // ── Persistence keys ───────────────────────────────────────────────────────────
-const LS_COORDS  = "prayer-coords";
-const LS_METHOD  = "prayer-method";
-const LS_SCHOOL  = "prayer-school";
+const LS_COORDS = "prayer-coords";
+const LS_METHOD = "prayer-method";
+const LS_SCHOOL = "prayer-school";
 
 function loadStored<T>(key: string, fallback: T): T {
   try {
@@ -28,7 +29,7 @@ function loadStored<T>(key: string, fallback: T): T {
 }
 
 function save(key: string, value: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { }
 }
 
 // ── SVG icon set ──────────────────────────────────────────────────────────────
@@ -36,16 +37,16 @@ const Icons = {
   Fajr: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2m0 14v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M3 12h2m14 0h2M6.34 17.66l-1.42 1.42M19.08 4.92l-1.42 1.42" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" opacity="0.4"/>
-      <path strokeLinecap="round" d="M3 17c2-4 6-6 9-6s7 2 9 6" strokeWidth="1.5"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" opacity="0.4" />
+      <path strokeLinecap="round" d="M3 17c2-4 6-6 9-6s7 2 9 6" strokeWidth="1.5" />
     </svg>
   ),
   Sunrise: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2m-7.07 2.93 1.41 1.41M3 13h2m14 0h2m-3.34-5.66 1.41-1.41" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 19a7 7 0 0 1 14 0" />
-      <line x1="3" y1="19" x2="21" y2="19" strokeLinecap="round"/>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v4" opacity="0.5"/>
+      <line x1="3" y1="19" x2="21" y2="19" strokeLinecap="round" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v4" opacity="0.5" />
     </svg>
   ),
   Dhuhr: (
@@ -57,14 +58,14 @@ const Icons = {
   Asr: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
       <circle cx="12" cy="12" r="3.5" />
-      <path strokeLinecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" opacity="0.5"/>
+      <path strokeLinecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" opacity="0.5" />
       <path strokeLinecap="round" d="M3 17c3-3 6-4 9-4s6 1 9 4" />
     </svg>
   ),
   Maghrib: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7">
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 19a7 7 0 0 1 9.9-6.36A5 5 0 1 1 17 19" />
-      <line x1="3" y1="19" x2="21" y2="19" strokeLinecap="round"/>
+      <line x1="3" y1="19" x2="21" y2="19" strokeLinecap="round" />
     </svg>
   ),
   Isha: (
@@ -105,12 +106,12 @@ const Icons = {
 };
 
 const PRAYER_COLORS: Record<string, string> = {
-  Fajr:    "text-indigo-400",
+  Fajr: "text-indigo-400",
   Sunrise: "text-orange-400",
-  Dhuhr:   "text-yellow-400",
-  Asr:     "text-amber-400",
+  Dhuhr: "text-yellow-400",
+  Asr: "text-amber-400",
   Maghrib: "text-rose-400",
-  Isha:    "text-blue-400",
+  Isha: "text-blue-400",
 };
 
 function getNextPrayer(times: Record<string, string>) {
@@ -129,13 +130,13 @@ function getNextPrayer(times: Record<string, string>) {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function PrayerTimesPage() {
-  const [data, setData]       = useState<PrayerTimesData | null>(null);
+  const [data, setData] = useState<PrayerTimesData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
-  const [coords, setCoords]   = useState<Coords | null>(null);
-  const [method, setMethod]   = useState(3);
-  const [school, setSchool]   = useState(1);
-  const [now, setNow]         = useState(new Date());
+  const [error, setError] = useState<string | null>(null);
+  const [coords, setCoords] = useState<Coords | null>(null);
+  const [method, setMethod] = useState(3);
+  const [school, setSchool] = useState(1);
+  const [now, setNow] = useState(new Date());
   // has the component mounted and read localStorage yet?
   const [hydrated, setHydrated] = useState(false);
 
@@ -147,9 +148,9 @@ export default function PrayerTimesPage() {
 
   // ── On mount: restore saved prefs and auto-load if coords exist ──────────────
   useEffect(() => {
-    const savedCoords  = loadStored<Coords | null>(LS_COORDS, null);
-    const savedMethod  = loadStored<number>(LS_METHOD, 3);
-    const savedSchool  = loadStored<number>(LS_SCHOOL, 1);
+    const savedCoords = loadStored<Coords | null>(LS_COORDS, null);
+    const savedMethod = loadStored<number>(LS_METHOD, 3);
+    const savedSchool = loadStored<number>(LS_SCHOOL, 1);
 
     setMethod(savedMethod);
     setSchool(savedSchool);
@@ -211,13 +212,13 @@ export default function PrayerTimesPage() {
 
   // ── Clear saved location ─────────────────────────────────────────────────────
   const handleClearLocation = () => {
-    try { localStorage.removeItem(LS_COORDS); } catch {}
+    try { localStorage.removeItem(LS_COORDS); } catch { }
     setCoords(null);
     setData(null);
     setError(null);
   };
 
-  const nextPrayer    = data ? getNextPrayer(data.times) : null;
+  const nextPrayer = data ? getNextPrayer(data.times) : null;
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const hasSavedLocation = !!coords;
 
@@ -357,17 +358,15 @@ export default function PrayerTimesPage() {
                 return (
                   <div
                     key={name}
-                    className={`card rounded-xl p-5 text-center transition-all duration-300 ${
-                      isNext ? "prayer-active" : isPast ? "opacity-50" : ""
-                    }`}
+                    className={`card rounded-xl p-5 text-center transition-all duration-300 ${isNext ? "prayer-active" : isPast ? "opacity-50" : ""
+                      }`}
                   >
                     <div className={`flex justify-center mb-3 ${PRAYER_COLORS[name] ?? "text-[var(--gold)]"}`}>
                       {Icons[name as keyof typeof Icons]}
                     </div>
                     <p className="text-[var(--text-muted)] text-xs mb-1">{name}</p>
-                    <p className={`font-bold text-lg font-mono ${
-                      isNext ? "text-[var(--gold-light)]" : "text-[var(--text-primary)]"
-                    }`}>
+                    <p className={`font-bold text-lg font-mono ${isNext ? "text-[var(--gold-light)]" : "text-[var(--text-primary)]"
+                      }`}>
                       {data.times[name]}
                     </p>
                     {isNext && <span className="badge badge-gold mt-2">Next</span>}
@@ -390,6 +389,9 @@ export default function PrayerTimesPage() {
                   <p className="text-[var(--text-muted)] text-xs">
                     from North · {data.qibla.distance.value.toLocaleString()} km to Makkah
                   </p>
+                  {data && (
+                    <QiblaCompass qiblaDegrees={data.qibla.direction.degrees} />
+                  )}
                 </div>
               </div>
               <div className="card rounded-xl p-5 flex items-center gap-4">

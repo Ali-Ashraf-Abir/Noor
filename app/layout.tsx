@@ -6,8 +6,8 @@ import Footer from "@/components/Footer";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "Noor — Islamic Prayer Times, Fasting & 99 Names",
-  description: "Accurate prayer times, fasting schedule (Sahur & Iftar), and the 99 beautiful names of Allah — personalised for your location.",
+  title: "Noor — Your Deen Buddy",
+  description: "Accurate prayer times, fasting schedule (Sahur & Iftar), and the 99 beautiful names of Allah ,Hadith collection, Quran, Trackers and more. Your all-in-one Islamic companion app.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
