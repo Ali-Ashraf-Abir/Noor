@@ -6,7 +6,7 @@ interface QiblaCompassProps {
   qiblaDegrees: number;
 }
 
-const SMOOTHING = 8; // number of readings to average
+const SMOOTHING = 5; // number of readings to average
 
 function averageAngles(angles: number[]): number {
   // Use circular mean to correctly average angles (handles 359° + 1° = 0°, not 180°)
@@ -106,8 +106,8 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
     return () => { cleanupRef.current?.(); };
   }, []);
 
-  const arrowRotation = heading !== null ? (qiblaDegrees - heading + 360) % 360 : 0;
-  const isAligned = heading !== null && Math.abs((qiblaDegrees - heading + 360) % 360) < 5;
+  const arrowRotation = heading !== null ? (heading - qiblaDegrees + 360) % 360 : 0;
+  const isAligned = heading !== null && Math.abs((heading - qiblaDegrees + 360) % 360) < 10;
   const isLoading = permission === "granted" && heading === null;
 
   return (
