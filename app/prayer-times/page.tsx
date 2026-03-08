@@ -13,6 +13,7 @@ import LocationButton from "@/components/LocationButton";
 import ErrorBanner from "@/components/ErrorBanner";
 import CountdownTimer from "@/components/CountDownTimer";
 import QiblaCompass from "@/components/QiblaCompass";
+import { requestNotificationPermission, schedulePrayerNotifications } from "@/lib/notification";
 
 // ── Persistence keys ───────────────────────────────────────────────────────────
 const LS_COORDS = "prayer-coords";
@@ -168,6 +169,7 @@ export default function PrayerTimesPage() {
     } else {
       setHydrated(true);
     }
+
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Fetch helper (used on filter changes + manual locate) ────────────────────
@@ -176,8 +178,13 @@ export default function PrayerTimesPage() {
     setError(null);
     try {
       const res = await fetchPrayerTimes(c, m, s);
-      if (res.code === 200 && res.data) setData(res.data);
-      else setError(res.message ?? "Failed to fetch prayer times.");
+      if (res.code === 200 && res.data) {
+        setData(res.data);
+        await requestNotificationPermission();
+        schedulePrayerNotifications(res.data.times);
+      } else {
+        setError(res.message ?? "Failed to fetch prayer times.");
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
