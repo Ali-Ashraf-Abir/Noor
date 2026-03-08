@@ -268,8 +268,6 @@ export default function HomePage() {
           </div>
         </div>
         <div className="animate-fade-in">
-          <p className="font-arabic ...">بِسْمِ اللّٰهِ...</p>
-          <p className="text-[var(--text-muted)] ...">In the name of Allah...</p>
           <div className="flex justify-center mt-5 md:hidden">
             <InstallButton />
           </div>
