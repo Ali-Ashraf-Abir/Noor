@@ -6,10 +6,9 @@ interface QiblaCompassProps {
   qiblaDegrees: number;
 }
 
-const SMOOTHING = 5; // number of readings to average
+const SMOOTHING = 5;
 
 function averageAngles(angles: number[]): number {
-  // Use circular mean to correctly average angles (handles 359° + 1° = 0°, not 180°)
   const sinSum = angles.reduce((s, a) => s + Math.sin((a * Math.PI) / 180), 0);
   const cosSum = angles.reduce((s, a) => s + Math.cos((a * Math.PI) / 180), 0);
   return ((Math.atan2(sinSum / angles.length, cosSum / angles.length) * 180) / Math.PI + 360) % 360;
@@ -20,58 +19,29 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
   const [permission, setPermission] = useState<"prompt" | "granted" | "denied" | "unsupported">("prompt");
   const buffer = useRef<number[]>([]);
   const cleanupRef = useRef<(() => void) | null>(null);
-  const sensor = new (window as any).AbsoluteOrientationSensor({ frequency: 10 });
+
   const startListening = () => {
     const handler = (e: DeviceOrientationEvent) => {
       let raw: number | null = null;
 
       if ((e as any).webkitCompassHeading != null) {
-        // iOS — already absolute North-referenced, most reliable
-        raw = (e as any).webkitCompassHeading;
-      } else if (e.absolute && e.alpha !== null) {
-        // Android with absolute orientation
-        raw = (360 - e.alpha) % 360;
+        // iOS — mirror it
+        raw = (360 - (e as any).webkitCompassHeading) % 360;
       } else if (e.alpha !== null) {
-        // Android without absolute — less reliable but best we can do
-        raw = (360 - e.alpha) % 360;
+        // Android — use alpha directly, no inversion
+        raw = e.alpha;
       }
 
       if (raw === null) return;
 
-      // Fill the circular buffer
       buffer.current.push(raw);
       if (buffer.current.length > SMOOTHING) buffer.current.shift();
-
-      // Only update state once we have enough readings
       if (buffer.current.length >= SMOOTHING) {
         setHeading(averageAngles(buffer.current));
       }
     };
 
-    // Prefer absolutedeviceorientation for Android (true North reference)
-    if ((window as any).AbsoluteOrientationSensor) {
-      try {
-        const sensor = new (window as any).AbsoluteOrientationSensor({ frequency: 10 });
-        sensor.addEventListener("reading", () => {
-          const q = sensor.quaternion;
-          // Convert quaternion to compass heading
-          const heading = Math.atan2(
-            2 * (q[0] * q[1] + q[2] * q[3]),
-            1 - 2 * (q[1] * q[1] + q[2] * q[2])
-          );
-          const deg = ((heading * 180) / Math.PI + 360) % 360;
-          buffer.current.push(deg);
-          if (buffer.current.length > SMOOTHING) buffer.current.shift();
-          if (buffer.current.length >= SMOOTHING) setHeading(averageAngles(buffer.current));
-        });
-        sensor.start();
-        cleanupRef.current = () => sensor.stop();
-        return;
-      } catch {
-        // Fall through to deviceorientation
-      }
-    }
-
+    // Prefer absolute event on Android
     window.addEventListener("deviceorientationabsolute", handler as EventListener, true);
     window.addEventListener("deviceorientation", handler as EventListener, true);
 
@@ -119,13 +89,6 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
       textAlign: "center",
       transition: "border-color 0.3s",
     }}>
-      {heading !== null && (
-        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
-          <div>raw heading: {Math.round(heading)}°</div>
-          <div>qibla: {Math.round(qiblaDegrees)}°</div>
-          <div>arrow rotation: {Math.round(arrowRotation)}°</div>
-        </div>
-      )}
       <p style={{
         fontSize: "0.7rem",
         textTransform: "uppercase",
@@ -168,22 +131,21 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
 
       {permission === "granted" && (
         <>
-          {/* Loading state while buffer fills */}
           {isLoading && (
             <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginBottom: "1rem" }}>
-              Calibrating compass… hold your phone flat and move it in a figure-8
+              Calibrating… hold your phone flat
             </p>
           )}
 
-          {/* Compass ring */}
           <div style={{
             position: "relative", width: 160, height: 160, margin: "0 auto 1rem",
             opacity: isLoading ? 0.4 : 1, transition: "opacity 0.3s",
           }}>
+            {/* Compass ring */}
             <svg width="160" height="160" viewBox="0 0 160 160" style={{ position: "absolute", inset: 0 }}>
               <circle cx="80" cy="80" r="76" fill="none" stroke="var(--border)" strokeWidth="1.5" />
               <circle cx="80" cy="80" r="60" fill="none" stroke="var(--border)" strokeWidth="0.5" strokeDasharray="4 6" />
-              {[0, 45, 90, 135, 180, 225, 270, 315].map(deg => {
+              {[0,45,90,135,180,225,270,315].map(deg => {
                 const rad = (deg - 90) * Math.PI / 180;
                 const isMajor = deg % 90 === 0;
                 const r1 = isMajor ? 68 : 71;
@@ -222,6 +184,7 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
               })}
             </svg>
 
+            {/* Qibla arrow */}
             <div style={{
               position: "absolute", inset: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -239,6 +202,7 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
               </svg>
             </div>
 
+            {/* Kaaba center */}
             <div style={{
               position: "absolute", inset: 0,
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -248,16 +212,18 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
             </div>
           </div>
 
+          {/* Status */}
           <div style={{ marginTop: "0.5rem" }}>
-            {isLoading ? null : isAligned ? (
-              <p style={{ color: "#4ecd82", fontSize: "0.9rem", fontWeight: 600 }}>✓ Facing Qibla</p>
+            {!isLoading && (isAligned ? (
+              <p style={{ color: "#4ecd82", fontSize: "0.9rem", fontWeight: 600 }}>Facing Qibla</p>
             ) : (
               <p style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>
                 Rotate until the arrow turns green
               </p>
-            )}
+            ))}
           </div>
 
+          {/* Debug readout — remove after confirming it works */}
           {heading !== null && (
             <div style={{
               display: "flex", justifyContent: "center", gap: "1.5rem",
@@ -266,6 +232,7 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
             }}>
               <span>Qibla: <strong style={{ color: "var(--gold)" }}>{Math.round(qiblaDegrees)}°</strong></span>
               <span>Heading: <strong style={{ color: "var(--text-secondary)" }}>{Math.round(heading)}°</strong></span>
+              <span>Arrow: <strong style={{ color: "var(--text-secondary)" }}>{Math.round(arrowRotation)}°</strong></span>
             </div>
           )}
         </>
