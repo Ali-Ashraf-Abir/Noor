@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { fetchRandomHadith } from "@/lib/api";
+import { InstallButton } from "@/components/InstallButton";
 
 // ── SVG icons ─────────────────────────────────────────────────────────────────
 const Icons = {
@@ -70,10 +71,10 @@ const Icons = {
   ),
   Tasbih: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" className="w-7 h-7">
-      <circle cx="12" cy="5" r="2"/><circle cx="19" cy="9" r="2"/>
-      <circle cx="19" cy="15" r="2"/><circle cx="12" cy="19" r="2"/>
-      <circle cx="5" cy="15" r="2"/><circle cx="5" cy="9" r="2"/>
-      <path strokeLinecap="round" d="M12 7v2.5M17.2 10.5l-2 1.3M17.2 13.5l-2-1.3M12 17v-2.5M6.8 13.5l2-1.3M6.8 10.5l2 1.3"/>
+      <circle cx="12" cy="5" r="2" /><circle cx="19" cy="9" r="2" />
+      <circle cx="19" cy="15" r="2" /><circle cx="12" cy="19" r="2" />
+      <circle cx="5" cy="15" r="2" /><circle cx="5" cy="9" r="2" />
+      <path strokeLinecap="round" d="M12 7v2.5M17.2 10.5l-2 1.3M17.2 13.5l-2-1.3M12 17v-2.5M6.8 13.5l2-1.3M6.8 10.5l2 1.3" />
     </svg>
   ),
 };
@@ -158,9 +159,9 @@ const FEATURES = [
 
 // ── Feature section groups ────────────────────────────────────────────────────
 const FEATURE_GROUPS = [
-  { label: "📖  Books",         slice: [0, 2]  as const },
+  { label: "📖  Books", slice: [0, 2] as const },
   { label: "🕌  Prayer & Ibadah", slice: [2, 6] as const },
-  { label: "🎓  Learn",         slice: [6, 8]  as const },
+  { label: "🎓  Learn", slice: [6, 8] as const },
 ];
 
 interface HadithData {
@@ -266,7 +267,13 @@ export default function HomePage() {
             <HadithBox />
           </div>
         </div>
-
+        <div className="animate-fade-in">
+          <p className="font-arabic ...">بِسْمِ اللّٰهِ...</p>
+          <p className="text-[var(--text-muted)] ...">In the name of Allah...</p>
+          <div className="flex justify-center mt-5 md:hidden">
+            <InstallButton />
+          </div>
+        </div>
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-[var(--text-muted)] animate-bounce">
           <span className="text-xs tracking-widest uppercase">Explore</span>
           {Icons.ChevronDown}
