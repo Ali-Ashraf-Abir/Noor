@@ -49,7 +49,7 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
     };
 
     // Prefer absolutedeviceorientation for Android (true North reference)
-    if ((window as any).AbsoluteOrientationSensor)  {
+    if ((window as any).AbsoluteOrientationSensor) {
       try {
         const sensor = new (window as any).AbsoluteOrientationSensor({ frequency: 10 });
         sensor.addEventListener("reading", () => {
@@ -106,8 +106,8 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
     return () => { cleanupRef.current?.(); };
   }, []);
 
-  const arrowRotation = heading !== null ? (heading - qiblaDegrees + 360) % 360 : 0;
-  const isAligned = heading !== null && Math.abs((heading - qiblaDegrees + 360) % 360) < 10;
+  const arrowRotation = heading !== null ? (qiblaDegrees - heading + 360) % 360 : 0;
+  const isAligned = heading !== null && Math.abs((qiblaDegrees - heading + 360) % 360) < 10;
   const isLoading = permission === "granted" && heading === null;
 
   return (
@@ -119,6 +119,13 @@ export default function QiblaCompass({ qiblaDegrees }: QiblaCompassProps) {
       textAlign: "center",
       transition: "border-color 0.3s",
     }}>
+      {heading !== null && (
+        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
+          <div>raw heading: {Math.round(heading)}°</div>
+          <div>qibla: {Math.round(qiblaDegrees)}°</div>
+          <div>arrow rotation: {Math.round(arrowRotation)}°</div>
+        </div>
+      )}
       <p style={{
         fontSize: "0.7rem",
         textTransform: "uppercase",
