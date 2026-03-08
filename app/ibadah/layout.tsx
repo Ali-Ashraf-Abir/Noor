@@ -5,7 +5,6 @@ export default function salahLayout({ children }: { children: React.ReactNode })
   return (
    <ProtectedRoute>
      <div className="min-h-screen pattern-bg relative">
-      <Navbar></Navbar>
       <div className="relative z-10">{children}</div>
     </div>
    </ProtectedRoute>
